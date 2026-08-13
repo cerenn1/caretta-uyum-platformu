@@ -48,5 +48,8 @@ Thumbs.db
 # Test / kapsam raporları
 coverage/
 
+# Yuklenen kapanis kaniti fotograflari (yerel disk, repo'ya girmez)
+/uploads/
+
 # Claude Code kisisel/lokal ayarlar
 .claude/settings.local.json
