@@ -23,6 +23,16 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, ex.getMessage(), List.of());
     }
 
+    @ExceptionHandler(GecersizIstekException.class)
+    public ResponseEntity<ApiError> handleGecersizIstek(GecersizIstekException ex) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(YetkisizErisimException.class)
+    public ResponseEntity<ApiError> handleYetkisizErisim(YetkisizErisimException ex) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), List.of());
+    }
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiError> handleBadCredentials(BadCredentialsException ex) {
         return build(HttpStatus.UNAUTHORIZED, "Email veya sifre hatali", List.of());
