@@ -1,0 +1,255 @@
+:root {
+  --deniz: #0f5257;
+  --deniz-koyu: #0a3a3d;
+  --turkuaz: #2fb8ac;
+  --kum: #f4e9d8;
+  --kum-koyu: #e5d3b3;
+  --metin: #1f2d2d;
+  --beyaz: #ffffff;
+  --hata: #c1432a;
+  --basari: #2f7a4f;
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--metin);
+  background: var(--kum);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.btn {
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.7rem 1.4rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.1s ease, opacity 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: var(--turkuaz);
+  color: var(--beyaz);
+  font-weight: 600;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--beyaz);
+  color: var(--beyaz);
+}
+
+.hero {
+  background: linear-gradient(160deg, var(--deniz) 0%, var(--deniz-koyu) 100%);
+  color: var(--beyaz);
+  padding-bottom: 3rem;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 2rem;
+}
+
+.logo {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.hero-content {
+  max-width: 720px;
+  margin: 2rem auto 0;
+  padding: 0 2rem;
+  text-align: center;
+}
+
+.hero-content h1 {
+  font-size: 2rem;
+  line-height: 1.3;
+  margin-bottom: 1rem;
+}
+
+.hero-content p {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  opacity: 0.92;
+  margin-bottom: 1.8rem;
+}
+
+main {
+  max-width: 640px;
+  margin: -2.5rem auto 3rem;
+  padding: 0 1.5rem;
+}
+
+.card-section {
+  background: var(--beyaz);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(15, 82, 87, 0.15);
+  padding: 1.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 0.6rem;
+  border: none;
+  background: var(--kum-koyu);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--metin);
+}
+
+.tab-btn.active {
+  background: var(--deniz);
+  color: var(--beyaz);
+}
+
+.auth-form h2,
+.dashboard-header h2 {
+  margin-top: 0;
+}
+
+.auth-form label,
+.yuva-form label {
+  display: block;
+  margin-bottom: 0.9rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.auth-form input,
+.yuva-form input,
+.yuva-form select,
+.yuva-form textarea {
+  display: block;
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--kum-koyu);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row label {
+  flex: 1;
+}
+
+.form-message {
+  min-height: 1.2rem;
+  font-size: 0.9rem;
+  margin: 0.6rem 0 0;
+  color: var(--basari);
+}
+
+.form-message.error {
+  color: var(--hata);
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+#user-email-label {
+  font-size: 0.85rem;
+  color: var(--deniz);
+  font-weight: 600;
+}
+
+.yuva-form {
+  margin: 1.2rem 0 1.5rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid var(--kum-koyu);
+}
+
+#yuva-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.yuva-card {
+  border: 1px solid var(--kum-koyu);
+  border-left: 4px solid var(--turkuaz);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+}
+
+.yuva-card.durum-risk_altinda {
+  border-left-color: var(--hata);
+}
+
+.yuva-card.durum-cikis_yapti {
+  border-left-color: var(--basari);
+}
+
+.yuva-card-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+
+.durum-badge {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: var(--deniz);
+}
+
+.tarih {
+  color: #6b6b6b;
+}
+
+.konum {
+  margin: 0.2rem 0;
+  font-size: 0.92rem;
+}
+
+.not {
+  margin: 0.3rem 0 0;
+  font-size: 0.9rem;
+  color: #4a4a4a;
+}
+
+.empty {
+  color: #6b6b6b;
+  font-size: 0.9rem;
+}
+
+footer {
+  text-align: center;
+  padding: 1.5rem;
+  font-size: 0.8rem;
+  color: #6b6b6b;
+}

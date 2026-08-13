@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caretta Uyum Platformu</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="hero">
+    <nav class="navbar">
+      <span class="logo">🐢 Caretta Uyum</span>
+      <div class="nav-actions">
+        <button id="nav-login-btn" class="btn btn-outline">Giriş Yap</button>
+        <button id="nav-logout-btn" class="btn btn-outline hidden">Çıkış Yap</button>
+      </div>
+    </nav>
+    <div class="hero-content">
+      <h1>Kaplumbağa Yuvalama Sahillerinde Kıyı Turizmi Uyum Platformu</h1>
+      <p>
+        Antalya ve çevresindeki caretta caretta yuvalama sahillerinde faaliyet gösteren otellerin
+        yasal koruma yükümlülüklerine (gece 20:00–08:00 sahil giriş yasağı, ışıklandırma kısıtlaması)
+        uyumunu izleyen, sahadaki yuva/gözlem kayıtlarını dijitalleştiren ve denetim/sertifikasyon
+        süreçlerinde kullanılabilecek kanıt üreten bir B2B/B2G platform.
+      </p>
+      <button id="hero-cta" class="btn btn-primary">Ücretsiz Kayıt Ol</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="auth-section" class="card-section">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="register" type="button">Kayıt Ol</button>
+        <button class="tab-btn" data-tab="login" type="button">Giriş Yap</button>
+      </div>
+
+      <form id="register-form" class="auth-form">
+        <h2>Kayıt Ol</h2>
+        <label>Email
+          <input type="email" name="email" required>
+        </label>
+        <label>Şifre
+          <input type="password" name="password" minlength="8" required>
+        </label>
+        <button type="submit" class="btn btn-primary">Kayıt Ol</button>
+        <p class="form-message" data-for="register"></p>
+      </form>
+
+      <form id="login-form" class="auth-form hidden">
+        <h2>Giriş Yap</h2>
+        <label>Email
+          <input type="email" name="email" required>
+        </label>
+        <label>Şifre
+          <input type="password" name="password" required>
+        </label>
+        <button type="submit" class="btn btn-primary">Giriş Yap</button>
+        <p class="form-message" data-for="login"></p>
+      </form>
+    </section>
+
+    <section id="dashboard-section" class="card-section hidden">
+      <div class="dashboard-header">
+        <h2>Yuva / Gözlem Kayıtları</h2>
+        <span id="user-email-label"></span>
+      </div>
+
+      <form id="yuva-form" class="yuva-form">
+        <div class="form-row">
+          <label>Enlem (latitude)
+            <input type="number" step="any" name="latitude" placeholder="ör. 36.8560" required>
+          </label>
+          <label>Boylam (longitude)
+            <input type="number" step="any" name="longitude" placeholder="ör. 30.7280" required>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>Tarih
+            <input type="date" name="tarih" required>
+          </label>
+          <label>Durum
+            <select name="durum" required>
+              <option value="AKTIF">Aktif</option>
+              <option value="CIKIS_YAPTI">Çıkış Yaptı</option>
+              <option value="RISK_ALTINDA">Risk Altında</option>
+            </select>
+          </label>
+        </div>
+        <label>Not
+          <textarea name="notlar" rows="2" placeholder="Gözlem notu (opsiyonel)"></textarea>
+        </label>
+        <button type="submit" class="btn btn-primary">Kaydı Ekle</button>
+        <p class="form-message" data-for="yuva"></p>
+      </form>
+
+      <div id="yuva-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Kaplumbağa Yuvalama Bölgeleri için Kıyı Turizmi Sürdürülebilirlik Uyum Platformu — MVP Prototip</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
