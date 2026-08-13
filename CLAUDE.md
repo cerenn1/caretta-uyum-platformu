@@ -72,7 +72,32 @@ Staj sorumlusunun istediği minimum lokal versiyon, **başka hiçbir şey değil
 
 **Not:** Kesin bir teslim tarihi henüz teyit edilmedi (staj sorumlusuyla netleştirilecek) — yukarıdaki 4 madde yine de mantıklı bir ilk MVP kapsamı olarak kalıyor, aceleye gerek yok.
 
+## Güncellenmiş Öncelik (Staj Sorumlusunun Geri Bildirimi)
+
+Staj sorumlusu, projenin **daha çok otel çalışanlarına ve otellere yönelik, ticari amaçlı** ilerlemesini istiyor. Bu, yukarıdaki MVP'nin üzerine eklenen bir sonraki adım (Faz 1.5):
+
+**Yeni özellik: Otel Kapanış Kanıtı ve Uyum Oranı Modülü**
+
+- Yeni kullanıcı rolü: `OTEL_CALISANI` (User entity'sine `role` alanı eklenir).
+- Yeni entity: `Otel` (id, ad, konum) — bir kullanıcı bir otele bağlı olur (`User.otelId`).
+- Yeni entity: `KapanisKaniti` (id, otelId, kullaniciId, tarih, fotoğrafUrl/dosyaYolu, oluşturulmaZamani).
+- Endpoint: `POST /api/kapanis-kaniti` — otel çalışanı, o günkü kapanış kanıtı fotoğrafını yükler.
+- Endpoint: `GET /api/otel/{id}/uyum-orani` — o otelin, belirli bir dönemdeki (örn. son 30 gün) kanıt yükleme oranını yüzde olarak hesaplayıp döner. Hesaplama: (kanıt yüklenen gün sayısı / dönemdeki toplam gün sayısı) × 100.
+- Frontend: Otel çalışanının günlük fotoğraf yükleyebildiği basit bir panel + o otelin güncel uyum oranını gösteren bir gösterge.
+
+**Ticari çerçeve (staj sorumlusuna anlatım için):** Bu modül, platformun asıl para karşılığı sunduğu değer — otel, bu uyum oranı raporunu hem iç denetimde hem uluslararası eko-sertifika (Travelife, Green Key) başvurusunda somut kanıt olarak kullanıyor. Gelir modeli: otel başına yıllık abonelik (bkz. `docs/proje_plani.md` Bölüm 7).
+
 Bunun dışındaki her şey (risk çapraz kontrolü, Claude ile rapor üretimi, puan sistemi, vatandaş modülü) **sonraki fazlara** bırakılıyor — şimdi kapsamı büyütmeye çalışma, önce bu 4 madde çalışsın.
+
+## Ticari Yol Haritası (Sonraki Fazlar — Şimdi Kodlama, Sadece Plan)
+
+Kapanış kanıtı modülü tek ticari özellik olmasın diye, otel/otel çalışanı odaklı ek ticari fikirler burada **belgeleniyor**. Aşağıdakilerin hiçbiri şu an Claude Code'a yazdırılmıyor — kapanış kanıtı modülü bitip test edilmeden bunlara başlanmayacak.
+
+1. **Otomatik Sertifika Raporu (PDF):** Uyum oranı verisinden, Green Key/Travelife başvurusunda kullanılabilecek resmi bir PDF rapor otomatik üretilir. Otelin normalde danışmanlık ücreti ödediği bir işi otomatikleştirir — premium katman.
+2. **Zincir Otel Paneli:** Birden fazla tesisi olan otel gruplarının tüm otellerini tek panelden yönetmesi. Daha büyük müşteri = daha büyük sözleşme.
+3. **Bölgesel Karşılaştırma (Benchmarking):** "Bölgenizdeki otellerin ortalama uyum oranı %X, siz %Y'desiniz." Oteli daha fazla kullanmaya/ödemeye teşvik eden rekabet unsuru.
+4. **Misafire Açık Şeffaflık Sayfası:** Otelin kendi sitesine ekleyebileceği, güncel uyum oranını gösteren halka açık sayfa — pazarlama aracı (gezginlerin sürdürülebilirliğe önem verdiği araştırmayla destekleniyor, bkz. `docs/proje_plani.md`).
+5. **Otomatik Hatırlatma Sistemi:** Otel birkaç gündür kanıt yüklemediyse otomatik uyarı — aboneliği aktif kullanılan bir araç haline getirip iptal riskini azaltır.
 
 ## Terim Sözlüğü
 
