@@ -1,0 +1,47 @@
+# Anahtar Kelime Sözlüğü
+
+Staj sorumlusunun paylaştığı terimler — kullanmak zorunlu değil, ama ne anlama geldiğini bilmek gerekiyor.
+
+- **Monolith:** Tüm uygulamanın tek bir kod tabanı ve tek bir deploy edilebilir birim olarak yazıldığı klasik mimari.
+- **Modular Monolith:** Tek uygulama olarak deploy edilir, ama içeride modüller net sınırlarla ayrılmıştır; mikroservis karmaşıklığı olmadan modülerlik sağlar. **(Bu projede kullanılan yaklaşım.)**
+- **Microservices:** Uygulamanın, her biri kendi veritabanına ve deploy sürecine sahip, ağ üzerinden haberleşen küçük bağımsız servislere bölünmesi.
+- **Event-Driven Architecture:** Servislerin birbirini doğrudan çağırmak yerine olay (event) yayınlayıp dinleyerek haberleştiği, gevşek bağlı mimari.
+- **Hexagonal / Clean Architecture:** İş mantığını dış dünyadan (veritabanı, UI, API) bağımsız tutan, katmanlı mimari yaklaşımı. **(Bu projede kullanılan yaklaşım.)**
+- **Domain-Driven Design:** Yazılımın, iş alanındaki kavram ve kurallara göre modellendiği tasarım yaklaşımı.
+- **Serverless (FaaS):** Sunucu yönetimi olmadan, kodun fonksiyonlar halinde bulut sağlayıcı tarafından çalıştırıldığı model.
+- **CQRS:** Veri okuma (Query) ve yazma (Command) işlemlerinin ayrı modeller üzerinden yönetildiği mimari desen.
+- **Event Sourcing:** Mevcut durumu değil, o duruma yol açan tüm olayları kaydedip durumu bu olaylardan yeniden türeten yaklaşım.
+- **BFF (Backend for Frontend):** Her istemci türü için özelleştirilmiş, ayrı backend katmanı.
+- **Strangler Fig:** Eski bir sistemi parça parça yenisiyle değiştirme stratejisi.
+- **Factory / Abstract Factory:** Nesne oluşturma mantığını çağıran koddan soyutlayan tasarım deseni.
+- **Strategy:** Farklı algoritmaları birbirinin yerine geçebilir sınıflara ayıran desen.
+- **Adapter:** Uyumsuz iki arayüzü birbirine bağlayan desen.
+- **Decorator:** Bir nesnenin davranışını, onu sarmalayan ek katmanlarla genişleten desen.
+- **Observer:** Bir nesnenin durumu değiştiğinde, bağımlı nesnelerin otomatik bilgilendirildiği desen. **(Bu projede kullanılıyor: risk tespitinde bildirim.)**
+- **Singleton:** Bir sınıftan uygulama boyunca yalnızca tek bir örnek oluşturulmasını garanti eden desen.
+- **Builder:** Karmaşık bir nesneyi adım adım inşa etmeyi sağlayan desen.
+- **Chain of Responsibility:** Bir isteğin, sırayla bir işleyiciler zincirinden geçirildiği desen. **(Bu projede kullanılıyor: vatandaş bildirim doğrulama akışı.)**
+- **Repository Pattern:** Veritabanı erişim mantığını iş mantığından soyutlayan katman. **(Bu projede kullanılıyor.)**
+- **API Gateway:** İstemci isteklerinin tek bir giriş noktasından geçtiği bileşen.
+- **Cache:** Sık erişilen verinin hızlı bir katmanda (örn. Redis) geçici saklanması.
+- **Distributed Monolith:** Mikroservis gibi görünen ama servisleri birbirine sıkı bağımlı, kötü mimari örneği.
+- **DRY (Don't Repeat Yourself):** Aynı bilginin kod tabanında tekrar edilmemesi gerektiğini savunan prensip.
+- **Test Pyramid:** Testlerin çoğunlukla hızlı unit testlerden oluşması gerektiğini öneren strateji.
+- **gRPC:** Servisler arası hızlı, tip güvenli iletişim sağlayan RPC çerçevesi.
+- **GraphQL:** İstemcinin ihtiyacı olan veriyi tek istekte sorgulayabildiği API dili.
+- **JWT (JSON Web Token):** Kullanıcı kimlik/yetki bilgisini taşıyan imzalı token standardı. **(Bu projede kullanılıyor.)**
+- **Zero Trust:** Hiçbir isteğe otomatik güvenmeyen güvenlik yaklaşımı.
+- **Zero Knowledge:** Bilgiyi ifşa etmeden sahipliğini ispatlayabilme yöntemi.
+- **SQL:** İlişkisel, şemalı veritabanları (PostgreSQL, MySQL). **(Bu projede kullanılan: PostgreSQL.)**
+- **No SQL:** Şemasız/esnek veritabanları (MongoDB, Redis).
+- **Kafka:** Yüksek hacimli olay akışlarını ileten dağıtık mesajlaşma platformu.
+- **Redis:** Bellek içi çalışan, hızlı cache/oturum deposu. **(Bu projede kullanılıyor.)**
+- **Prometheus:** Uygulama/sistem metriklerini izleyen açık kaynak araç.
+- **Pinecone / ChromaDB:** Embedding verilerini saklayan vektör veritabanları (RAG için).
+- **Pipeline:** Verinin sıralı adımlardan geçirildiği işlem zinciri.
+- **Elasticsearch:** Hızlı tam metin arama motoru.
+- **MongoDB:** JSON benzeri doküman tabanlı NoSQL veritabanı.
+- **Docker:** Uygulamayı izole, taşınabilir bir pakete koyan konteyner teknolojisi. **(Bu projede kullanılıyor.)**
+- **GitHub:** Git barındıran, işbirliği ve CI/CD sağlayan platform. **(Bu projede kullanılıyor.)**
+- **RAG (Retrieval-Augmented Generation):** Bir dil modelinin harici veriden bilgi çekip yanıtına katması tekniği.
+- **Ubuntu:** Sunucularda yaygın kullanılan Linux dağıtımı.

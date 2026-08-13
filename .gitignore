@@ -1,0 +1,52 @@
+# Ortam değişkenleri — ASLA commit edilmeyecek
+.env
+.env.local
+.env.*.local
+
+# API anahtarları / secret dosyaları
+*.pem
+*.key
+secrets/
+
+# Java / Maven derleme çıktısı
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# Bağımlılıklar (frontend klasörü için, varsa)
+node_modules/
+dist/
+build/
+
+# Docker
+*.pid
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.classpath
+.project
+.settings/
+.apt_generated
+.factorypath
+.springBeans
+.sts4-cache
+*.iws
+*.iml
+*.ipr
+
+# Loglar
+*.log
+npm-debug.log*
+
+# İşletim sistemi
+.DS_Store
+Thumbs.db
+
+# Test / kapsam raporları
+coverage/
+
+# Claude Code kisisel/lokal ayarlar
+.claude/settings.local.json
