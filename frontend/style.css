@@ -51,6 +51,14 @@ body {
   color: var(--beyaz);
 }
 
+.btn-outline-dark {
+  background: transparent;
+  border: 1px solid var(--deniz);
+  color: var(--deniz);
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
 .hero {
   background: linear-gradient(160deg, var(--deniz) 0%, var(--deniz-koyu) 100%);
   color: var(--beyaz);
@@ -139,9 +147,11 @@ main {
 }
 
 .auth-form input,
+.auth-form select,
 .yuva-form input,
 .yuva-form select,
-.yuva-form textarea {
+.yuva-form textarea,
+#kapanis-kaniti-form input {
   display: block;
   width: 100%;
   margin-top: 0.35rem;
@@ -150,6 +160,29 @@ main {
   border-radius: 8px;
   font-size: 1rem;
   font-family: inherit;
+}
+
+#otel-secim-alani {
+  margin-bottom: 0.9rem;
+}
+
+.yeni-otel-details {
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
+}
+
+.yeni-otel-details summary {
+  cursor: pointer;
+  color: var(--deniz);
+  font-weight: 600;
+}
+
+.yeni-otel-details .form-row {
+  margin-top: 0.6rem;
+}
+
+.yeni-otel-details label {
+  margin-bottom: 0.6rem;
 }
 
 .form-row {
@@ -245,6 +278,32 @@ main {
 .empty {
   color: #6b6b6b;
   font-size: 0.9rem;
+}
+
+.uyum-orani-alani {
+  text-align: center;
+  margin-bottom: 1.4rem;
+}
+
+.gauge-circle {
+  --pct: 0;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin: 0 auto 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--deniz-koyu);
+  background: conic-gradient(var(--turkuaz) calc(var(--pct) * 1%), var(--kum-koyu) 0);
+}
+
+.uyum-orani-detay {
+  font-size: 0.9rem;
+  color: #4a4a4a;
+  margin: 0;
 }
 
 footer {

@@ -42,6 +42,39 @@
         <label>Şifre
           <input type="password" name="password" minlength="8" required>
         </label>
+        <label>Kayıt Türü
+          <select name="role" id="register-role">
+            <option value="KULLANICI">Vatandaş / Gözlemci</option>
+            <option value="OTEL_CALISANI">Otel Çalışanı</option>
+          </select>
+        </label>
+
+        <div id="otel-secim-alani" class="hidden">
+          <label>Otel
+            <select name="otelId" id="otel-select">
+              <option value="">Otel seç...</option>
+            </select>
+          </label>
+          <details class="yeni-otel-details">
+            <summary>+ Listede yok, yeni otel ekle</summary>
+            <div class="form-row">
+              <label>Otel adı
+                <input type="text" id="yeni-otel-ad">
+              </label>
+            </div>
+            <div class="form-row">
+              <label>Enlem
+                <input type="number" step="any" id="yeni-otel-lat">
+              </label>
+              <label>Boylam
+                <input type="number" step="any" id="yeni-otel-lng">
+              </label>
+            </div>
+            <button type="button" id="yeni-otel-ekle-btn" class="btn btn-outline-dark">Oteli Kaydet</button>
+            <p class="form-message" data-for="yeni-otel"></p>
+          </details>
+        </div>
+
         <button type="submit" class="btn btn-primary">Kayıt Ol</button>
         <p class="form-message" data-for="register"></p>
       </form>
@@ -94,6 +127,23 @@
       </form>
 
       <div id="yuva-list"></div>
+    </section>
+
+    <section id="otel-panel-section" class="card-section hidden">
+      <h2>Otel Kapanış Kanıtı Paneli</h2>
+
+      <div class="uyum-orani-alani">
+        <div class="gauge-circle" id="uyum-orani-gauge">--%</div>
+        <p id="uyum-orani-detay" class="uyum-orani-detay"></p>
+      </div>
+
+      <form id="kapanis-kaniti-form">
+        <label>Bugünün kapanış kanıtı fotoğrafı (JPG/PNG, maks. 10MB)
+          <input type="file" name="fotograf" accept="image/jpeg,image/png" required>
+        </label>
+        <button type="submit" class="btn btn-primary">Fotoğrafı Yükle</button>
+        <p class="form-message" data-for="kapanis-kaniti"></p>
+      </form>
     </section>
   </main>
 
