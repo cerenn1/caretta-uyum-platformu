@@ -51,5 +51,6 @@ coverage/
 # Yuklenen kapanis kaniti fotograflari (yerel disk, repo'ya girmez)
 /uploads/
 
-# Claude Code kisisel/lokal ayarlar
+# Claude Code kisisel/lokal ayarlar ve calisma zamani dosyalari
 .claude/settings.local.json
+.claude/scheduled_tasks.lock
