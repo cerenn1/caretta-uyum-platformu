@@ -36,6 +36,12 @@ public class Otel {
     @Column(nullable = false)
     private Double longitude;
 
+    // DIKKAT: nullable = false KOYMA. Veritabaninda zaten kayitli oteller var,
+    // ddl-auto=update ile NOT NULL kolon eklemek semayi patlatir. Mevcut kayitlar
+    // icin CommonPackage'daki backfill runner acilista kod atar.
+    @Column(name = "davet_kodu", unique = true, length = 12)
+    private String davetKodu;
+
     @Builder.Default
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

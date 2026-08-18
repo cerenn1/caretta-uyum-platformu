@@ -9,6 +9,7 @@ import com.caretta.proje.auth.repository.UserRepository;
 import com.caretta.proje.auth.security.JwtService;
 import com.caretta.proje.common.exception.DuplicateResourceException;
 import com.caretta.proje.common.exception.GecersizIstekException;
+import com.caretta.proje.common.exception.ResourceNotFoundException;
 import com.caretta.proje.otel.entity.Otel;
 import com.caretta.proje.otel.service.OtelService;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,10 @@ public class AuthService {
             if (request.otelId() == null) {
                 throw new GecersizIstekException("Otel calisani kaydi icin otelId zorunlu");
             }
-            otel = otelService.getEntity(request.otelId());
+            if (request.otelDavetKodu() == null || request.otelDavetKodu().isBlank()) {
+                throw new GecersizIstekException("Otel calisani kaydi icin davet kodu zorunlu");
+            }
+            otel = dogrulanmisOteliGetir(request.otelId(), request.otelDavetKodu());
         }
 
         User user = User.builder()
@@ -66,5 +70,27 @@ public class AuthService {
         String token = jwtService.generateToken(user);
         Long otelId = user.getOtel() != null ? user.getOtel().getId() : null;
         return new AuthResponse(token, user.getEmail(), user.getRole(), otelId);
+    }
+
+    /**
+     * Otel id + davet kodu ciftini dogrular. Guvenlik geregi (bilgi sizintisini onlemek icin)
+     * otel bulunamadi, kod eslesmedi veya otelin henuz kodu yoksa (backfill calismamis olabilir)
+     * HEPSI icin AYNI hata firlatilir - aksi halde saldirgan hangi otelId'lerin var oldugunu
+     * kod deneyerek anlayabilir.
+     */
+    private Otel dogrulanmisOteliGetir(Long otelId, String girilenKod) {
+        Otel otel;
+        try {
+            otel = otelService.getEntity(otelId);
+        } catch (ResourceNotFoundException e) {
+            throw new GecersizIstekException("Otel id veya davet kodu hatali");
+        }
+
+        String beklenenKod = otel.getDavetKodu();
+        if (beklenenKod == null || !beklenenKod.equalsIgnoreCase(girilenKod.trim())) {
+            throw new GecersizIstekException("Otel id veya davet kodu hatali");
+        }
+
+        return otel;
     }
 }

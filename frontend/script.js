@@ -22,6 +22,7 @@ const els = {
   registerRole: document.getElementById("register-role"),
   otelSecimAlani: document.getElementById("otel-secim-alani"),
   otelSelect: document.getElementById("otel-select"),
+  otelDavetKoduInput: document.getElementById("otel-davet-kodu"),
   yeniOtelAdInput: document.getElementById("yeni-otel-ad"),
   yeniOtelLatInput: document.getElementById("yeni-otel-lat"),
   yeniOtelLngInput: document.getElementById("yeni-otel-lng"),
@@ -210,7 +211,12 @@ els.yeniOtelEkleBtn.addEventListener("click", async () => {
     });
     await loadOtelSecenekleri();
     els.otelSelect.value = otel.id;
-    setMessage("yeni-otel", "Otel eklendi ve seçildi.", false);
+    els.otelDavetKoduInput.value = otel.davetKodu;
+    setMessage(
+      "yeni-otel",
+      `Otel eklendi. Davet kodu: ${otel.davetKodu} — bu kodu not al, çalışanların kayıt olurken kullanacak.`,
+      false
+    );
   } catch (err) {
     setMessage("yeni-otel", err.message, true);
   }
@@ -221,16 +227,28 @@ els.registerForm.addEventListener("submit", async (e) => {
   const formData = new FormData(els.registerForm);
   const role = formData.get("role") || "KULLANICI";
   const otelId = role === "OTEL_CALISANI" ? Number(formData.get("otelId")) || null : null;
+  const otelDavetKodu = role === "OTEL_CALISANI" ? formData.get("otelDavetKodu") || null : null;
 
   if (role === "OTEL_CALISANI" && !otelId) {
     setMessage("register", "Lütfen bir otel seçin veya yeni bir otel ekleyin.", true);
     return;
   }
 
+  if (role === "OTEL_CALISANI" && !otelDavetKodu) {
+    setMessage("register", "Otel çalışanı kaydı için davet kodu zorunlu.", true);
+    return;
+  }
+
   try {
     const data = await apiRequest("/api/auth/register", {
       method: "POST",
-      body: JSON.stringify({ email: formData.get("email"), password: formData.get("password"), role, otelId }),
+      body: JSON.stringify({
+        email: formData.get("email"),
+        password: formData.get("password"),
+        role,
+        otelId,
+        otelDavetKodu,
+      }),
     });
     setMessage("register", "", false);
     girisSonrasiHazirla(data);

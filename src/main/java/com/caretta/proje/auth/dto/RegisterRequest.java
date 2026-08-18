@@ -9,6 +9,7 @@ public record RegisterRequest(
         @NotBlank @Email String email,
         @NotBlank @Size(min = 8, message = "Sifre en az 8 karakter olmali") String password,
         Rol role,
-        Long otelId
+        Long otelId,
+        String otelDavetKodu
 ) {
 }

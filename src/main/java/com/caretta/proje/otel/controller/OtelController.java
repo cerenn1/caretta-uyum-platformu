@@ -1,5 +1,6 @@
 package com.caretta.proje.otel.controller;
 
+import com.caretta.proje.otel.dto.OtelOlusturmaResponse;
 import com.caretta.proje.otel.dto.OtelRequest;
 import com.caretta.proje.otel.dto.OtelResponse;
 import com.caretta.proje.otel.service.OtelService;
@@ -23,8 +24,8 @@ public class OtelController {
     private final OtelService otelService;
 
     @PostMapping
-    public ResponseEntity<OtelResponse> ekle(@Valid @RequestBody OtelRequest request) {
-        OtelResponse response = otelService.ekle(request);
+    public ResponseEntity<OtelOlusturmaResponse> ekle(@Valid @RequestBody OtelRequest request) {
+        OtelOlusturmaResponse response = otelService.ekle(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

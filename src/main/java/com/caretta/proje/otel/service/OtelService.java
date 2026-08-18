@@ -1,6 +1,7 @@
 package com.caretta.proje.otel.service;
 
 import com.caretta.proje.common.exception.ResourceNotFoundException;
+import com.caretta.proje.otel.dto.OtelOlusturmaResponse;
 import com.caretta.proje.otel.dto.OtelRequest;
 import com.caretta.proje.otel.dto.OtelResponse;
 import com.caretta.proje.otel.entity.Otel;
@@ -15,16 +16,18 @@ import java.util.List;
 public class OtelService {
 
     private final OtelRepository otelRepository;
+    private final DavetKoduUretici davetKoduUretici;
 
-    public OtelResponse ekle(OtelRequest request) {
+    public OtelOlusturmaResponse ekle(OtelRequest request) {
         Otel otel = Otel.builder()
                 .ad(request.ad())
                 .latitude(request.latitude())
                 .longitude(request.longitude())
+                .davetKodu(davetKoduUretici.uret())
                 .build();
 
         otelRepository.save(otel);
-        return toResponse(otel);
+        return new OtelOlusturmaResponse(otel.getId(), otel.getAd(), otel.getLatitude(), otel.getLongitude(), otel.getDavetKodu());
     }
 
     public List<OtelResponse> listele() {

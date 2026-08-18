@@ -1,5 +1,6 @@
 package com.caretta.proje.otel;
 
+import com.caretta.proje.auth.repository.UserRepository;
 import com.caretta.proje.otel.entity.Otel;
 import com.caretta.proje.otel.repository.OtelRepository;
 import tools.jackson.databind.JsonNode;
@@ -45,6 +46,9 @@ class OtelYetkilendirmeIntegrationTest {
     @Autowired
     private OtelRepository otelRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private Otel otelA;
     private Otel otelB;
 
@@ -54,20 +58,26 @@ class OtelYetkilendirmeIntegrationTest {
                 .ad("Yetki Testi Otel A " + UUID.randomUUID())
                 .latitude(36.85)
                 .longitude(30.7)
+                .davetKodu(rastgeleTestDavetKodu())
                 .build());
 
         otelB = otelRepository.save(Otel.builder()
                 .ad("Yetki Testi Otel B " + UUID.randomUUID())
                 .latitude(37.0)
                 .longitude(31.0)
+                .davetKodu(rastgeleTestDavetKodu())
                 .build());
+    }
+
+    private String rastgeleTestDavetKodu() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
     }
 
     private String otelCalisaniKaydolVeTokenAl(Otel otel) throws Exception {
         String email = "calisan_" + UUID.randomUUID() + "@example.com";
         String body = """
-                {"email":"%s","password":"password123","role":"OTEL_CALISANI","otelId":%d}
-                """.formatted(email, otel.getId());
+                {"email":"%s","password":"password123","role":"OTEL_CALISANI","otelId":%d,"otelDavetKodu":"%s"}
+                """.formatted(email, otel.getId(), otel.getDavetKodu());
 
         MvcResult result = mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -145,5 +155,116 @@ class OtelYetkilendirmeIntegrationTest {
                 .andReturn();
 
         assertThat(uploadResult.getResponse().getStatus()).isEqualTo(403);
+    }
+
+    @Test
+    void otelCalisaniKaydinda_davetKoduEksikse400Donmeli() throws Exception {
+        String email = "calisan_" + UUID.randomUUID() + "@example.com";
+        String body = """
+                {"email":"%s","password":"password123","role":"OTEL_CALISANI","otelId":%d}
+                """.formatted(email, otelA.getId());
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void otelCalisaniKaydinda_davetKoduYanlisIse400Donmeli() throws Exception {
+        String email = "calisan_" + UUID.randomUUID() + "@example.com";
+        String body = """
+                {"email":"%s","password":"password123","role":"OTEL_CALISANI","otelId":%d,"otelDavetKodu":"YANLISKOD"}
+                """.formatted(email, otelA.getId());
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Otel id veya davet kodu hatali"));
+    }
+
+    @Test
+    void otelCalisaniKaydinda_olmayanOtelIdIleAyniOrtakHataMesajiDonmeli() throws Exception {
+        // Bilgi sizintisi onlemi: var olmayan otelId ile yanlis davet kodu AYNI mesaji dondurmeli,
+        // yoksa saldirgan hangi otelId'lerin var oldugunu ayirt edebilir.
+        String email = "calisan_" + UUID.randomUUID() + "@example.com";
+        long olmayanOtelId = otelB.getId() + 1_000_000L;
+        String body = """
+                {"email":"%s","password":"password123","role":"OTEL_CALISANI","otelId":%d,"otelDavetKodu":"HERHANGIBIRKOD"}
+                """.formatted(email, olmayanOtelId);
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Otel id veya davet kodu hatali"));
+    }
+
+    @Test
+    void otelCalisaniKaydinda_davetKoduBuyukKucukHarfDuyarsizVeTrimliKabulEdilir() throws Exception {
+        String email = "calisan_" + UUID.randomUUID() + "@example.com";
+        String kucukHarfliVeBosluklu = "  " + otelA.getDavetKodu().toLowerCase() + "  ";
+        String body = """
+                {"email":"%s","password":"password123","role":"OTEL_CALISANI","otelId":%d,"otelDavetKodu":"%s"}
+                """.formatted(email, otelA.getId(), kucukHarfliVeBosluklu);
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.token", org.hamcrest.Matchers.notNullValue()));
+    }
+
+    @Test
+    void otelCalisaniKaydinda_dogruKoduIleKayitBasariliOlurVeKullaniciVeritabaninaYazilir() throws Exception {
+        String email = "calisan_" + UUID.randomUUID() + "@example.com";
+        String body = """
+                {"email":"%s","password":"password123","role":"OTEL_CALISANI","otelId":%d,"otelDavetKodu":"%s"}
+                """.formatted(email, otelA.getId(), otelA.getDavetKodu());
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.token", org.hamcrest.Matchers.notNullValue()))
+                .andExpect(jsonPath("$.role").value("OTEL_CALISANI"))
+                .andExpect(jsonPath("$.otelId").value(otelA.getId()));
+
+        assertThat(userRepository.existsByEmail(email))
+                .as("dogru davet kodu ile kayit sonrasi kullanici veritabaninda olusmus olmali")
+                .isTrue();
+    }
+
+    @Test
+    void otelCalisaniKaydinda_yanlisKoduIleKullaniciVeritabaninaKaydedilmez() throws Exception {
+        String email = "calisan_" + UUID.randomUUID() + "@example.com";
+        String body = """
+                {"email":"%s","password":"password123","role":"OTEL_CALISANI","otelId":%d,"otelDavetKodu":"YANLISKOD"}
+                """.formatted(email, otelA.getId());
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+
+        assertThat(userRepository.existsByEmail(email))
+                .as("yanlis davet kodu ile basarisiz kayit denemesi kullanici olusturmamali")
+                .isFalse();
+    }
+
+    @Test
+    void otellerListeleme_davetKoduAlaniCevaptaHicGorunmez() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/oteller"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String responseBody = result.getResponse().getContentAsString();
+
+        assertThat(responseBody)
+                .as("GET /api/oteller herkese acik oldugu icin davetKodu alanini HICBIR sekilde icermemeli")
+                .doesNotContain("davetKodu")
+                .doesNotContain(otelA.getDavetKodu())
+                .doesNotContain(otelB.getDavetKodu());
     }
 }
