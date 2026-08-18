@@ -23,6 +23,7 @@ public class KapanisKanitiService {
 
     private static final Set<String> IZIN_VERILEN_TIPLER = Set.of("image/jpeg", "image/png");
     private static final long UYUM_ORANI_DONEM_GUN_SAYISI = 30;
+    private static final long MAKS_DOSYA_BOYUTU_BYTE = 10L * 1024 * 1024;
 
     private final KapanisKanitiRepository kapanisKanitiRepository;
     private final FotografDepolamaServisi fotografDepolamaServisi;
@@ -40,6 +41,10 @@ public class KapanisKanitiService {
         String contentType = fotograf.getContentType();
         if (contentType == null || !IZIN_VERILEN_TIPLER.contains(contentType)) {
             throw new GecersizIstekException("Sadece JPG/PNG resim dosyalari kabul edilir");
+        }
+
+        if (fotograf.getSize() > MAKS_DOSYA_BOYUTU_BYTE) {
+            throw new GecersizIstekException("Dosya boyutu en fazla 10MB olabilir");
         }
 
         Long otelId = currentUser.getOtel().getId();
@@ -62,7 +67,11 @@ public class KapanisKanitiService {
         return toResponse(kayit);
     }
 
-    public UyumOraniResponse uyumOraniHesapla(Long otelId) {
+    public UyumOraniResponse uyumOraniHesapla(Long otelId, User currentUser) {
+        if (currentUser.getOtel() == null || !currentUser.getOtel().getId().equals(otelId)) {
+            throw new YetkisizErisimException("Sadece kendi otelinizin uyum oranini goruntuleyebilirsiniz");
+        }
+
         Otel otel = otelService.getEntity(otelId);
 
         LocalDate bugun = LocalDate.now();

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +23,7 @@ public class KapanisKanitiController {
 
     private final KapanisKanitiService kapanisKanitiService;
 
+    @PreAuthorize("hasRole('OTEL_CALISANI')")
     @PostMapping(value = "/api/kapanis-kaniti", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<KapanisKanitiResponse> yukle(@RequestParam("fotograf") MultipartFile fotograf,
                                                          @AuthenticationPrincipal User currentUser) {
@@ -30,7 +32,8 @@ public class KapanisKanitiController {
     }
 
     @GetMapping("/api/otel/{id}/uyum-orani")
-    public ResponseEntity<UyumOraniResponse> uyumOrani(@PathVariable("id") Long otelId) {
-        return ResponseEntity.ok(kapanisKanitiService.uyumOraniHesapla(otelId));
+    public ResponseEntity<UyumOraniResponse> uyumOrani(@PathVariable("id") Long otelId,
+                                                         @AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(kapanisKanitiService.uyumOraniHesapla(otelId, currentUser));
     }
 }

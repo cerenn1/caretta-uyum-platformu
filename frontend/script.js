@@ -26,6 +26,7 @@ const els = {
   yeniOtelLatInput: document.getElementById("yeni-otel-lat"),
   yeniOtelLngInput: document.getElementById("yeni-otel-lng"),
   yeniOtelEkleBtn: document.getElementById("yeni-otel-ekle-btn"),
+  yeniOtelGirisNotu: document.getElementById("yeni-otel-giris-notu"),
   otelPanelSection: document.getElementById("otel-panel-section"),
   uyumOraniGauge: document.getElementById("uyum-orani-gauge"),
   uyumOraniDetay: document.getElementById("uyum-orani-detay"),
@@ -54,6 +55,12 @@ function updateAuthUI() {
   els.navLogoutBtn.classList.toggle("hidden", !loggedIn);
   els.otelPanelSection.classList.toggle("hidden", !otelCalisani);
   els.userEmailLabel.textContent = state.email ? `Giriş yapan: ${state.email}` : "";
+
+  els.yeniOtelEkleBtn.disabled = !loggedIn;
+  els.yeniOtelAdInput.disabled = !loggedIn;
+  els.yeniOtelLatInput.disabled = !loggedIn;
+  els.yeniOtelLngInput.disabled = !loggedIn;
+  els.yeniOtelGirisNotu.classList.toggle("hidden", loggedIn);
 }
 
 function saveSession(token, email, role, otelId) {

@@ -59,18 +59,19 @@
             <summary>+ Listede yok, yeni otel ekle</summary>
             <div class="form-row">
               <label>Otel adı
-                <input type="text" id="yeni-otel-ad">
+                <input type="text" id="yeni-otel-ad" disabled>
               </label>
             </div>
             <div class="form-row">
               <label>Enlem
-                <input type="number" step="any" id="yeni-otel-lat">
+                <input type="number" step="any" id="yeni-otel-lat" disabled>
               </label>
               <label>Boylam
-                <input type="number" step="any" id="yeni-otel-lng">
+                <input type="number" step="any" id="yeni-otel-lng" disabled>
               </label>
             </div>
-            <button type="button" id="yeni-otel-ekle-btn" class="btn btn-outline-dark">Oteli Kaydet</button>
+            <button type="button" id="yeni-otel-ekle-btn" class="btn btn-outline-dark" disabled>Oteli Kaydet</button>
+            <p id="yeni-otel-giris-notu" class="form-message">Yeni otel eklemek icin once giris yapmalisiniz.</p>
             <p class="form-message" data-for="yeni-otel"></p>
           </details>
         </div>
