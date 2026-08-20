@@ -187,6 +187,9 @@ Güvenlik denetiminde tespit edilen, MVP için engelleyici **olmayan** ama ilgil
 3. **Harita tile istekleri, bakılan bölgeyi üçüncü tarafa gösterir — hassasiyet artarsa kendi tile sunucusu gerekir.**
    Mobil uygulamada harita için OSMDroid (OpenStreetMap) kullanılıyor; API anahtarı gerektirmemesi nedeniyle bilinçli olarak seçildi. Bunun bedeli şu: harita her açıldığında hangi bölgeye zoom yapıldığı bilgisi OpenStreetMap'in tile sunucularına gider. Yuva koordinatlarının kendisi gönderilmiyor, yalnızca görüntülenen kaba alan. Proje planında kaçak avlanma riski açıkça bir tehdit olarak geçtiği için bu farkındalıkla taşınmalı; yuva konumlarının gizliliği kritik hale gelirse kendi tile sunucunuzu barındırmak (veya haritayı yalnızca yetkili rollere açmak) değerlendirilmeli.
 
+4. **Rate limit (istek sınırlaması) yok — ödeme yapan birden fazla müşteri onboard edilmeden önce eklenmeli.**
+   Uygulamada hiçbir endpoint'te kullanıcı/IP başına istek sınırı bulunmuyor. İki nokta öne çıkıyor: (a) `POST /api/auth/register` herkese açık — spam hesap açma ve otel davet kodu deneme yolu; kod uzayı (32 karakterli alfabe, 8 hane ≈ 1,1 trilyon kombinasyon) kaba kuvveti pratikte imkânsız kıldığı için bugün kritik değil, ama tek savunma bu. (b) `GET /api/otel/{id}/uyum-raporu` uygulamanın en pahalı endpoint'i — 365 güne kadar tablo üretip PDF oluşturuyor. Yetkilendirme atlatılamıyor ve tek isteğin maliyeti düşük (~40-50KB, 1 saniyenin altı), ancak kimliği doğrulanmış (veya çalınmış token'a sahip) bir kullanıcı art arda büyük rapor isteyerek sunucu iş parçacıklarını meşgul edebilir. Kullanıcı/IP başına basit bir sınır (örn. Bucket4j) yeterli olur.
+
 ## Terim Sözlüğü
 
 Staj sorumlusunun paylaştığı mimari terimlerin (Monolith, Microservices, CQRS, JWT, RAG, Redis, Kafka vb.) birer-ikişer cümlelik açıklamaları `docs/terim_sozlugu.md` içinde — kullanmak zorunlu değil ama sunumda sorulursa bilinmeli.
