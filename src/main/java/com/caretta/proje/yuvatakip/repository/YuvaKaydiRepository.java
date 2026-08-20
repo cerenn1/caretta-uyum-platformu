@@ -4,7 +4,18 @@ import com.caretta.proje.yuvatakip.entity.YuvaKaydi;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface YuvaKaydiRepository extends JpaRepository<YuvaKaydi, Long> {
     List<YuvaKaydi> findByUserIdOrderByTarihDesc(Long userId);
+
+    // Panel ozeti icin: sadece sayi lazim, findByUserIdOrderByTarihDesc gibi tum
+    // kayitlari belleğe cekip .size() almak yerine dogrudan COUNT sorgusu calistirir.
+    long countByUserId(Long userId);
+
+    // Panel ozetindeki "son yuva kaydi" karti icin. Ayni tarihte birden fazla kayit
+    // olabildiginden (bir gunde birden fazla gozlem girilebilir), tarih siralamasi tek
+    // basina deterministik degil; ikincil siralama id ile yapilarak "en son eklenen"
+    // her zaman ayni kaydi verir.
+    Optional<YuvaKaydi> findFirstByUserIdOrderByTarihDescIdDesc(Long userId);
 }
