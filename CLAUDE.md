@@ -184,6 +184,9 @@ Güvenlik denetiminde tespit edilen, MVP için engelleyici **olmayan** ama ilgil
 2. **Magic-byte (dosya imzası) doğrulaması gerekli — kanıt fotoğrafını dışarı sunan bir endpoint eklenirse.**
    Dosya tipi doğrulaması şu an `Content-Type` başlığına dayanıyor ve bu başlık istemci tarafından uydurulabilir. Şu an aktif bir risk oluşturmuyor çünkü yüklenen dosyaları geri sunan hiçbir endpoint yok (`uploads/` klasörü dışarı açılmamış durumda). Fotoğrafları görüntületen bir endpoint (örn. `GET /api/kapanis-kaniti/{id}/fotograf`) veya statik dosya sunumu eklenirse, dosyanın gerçek içeriği (magic byte / dosya imzası) doğrulanmalı — aksi halde `image/png` etiketiyle yüklenmiş zararlı bir dosya tarayıcıda çalıştırılabilir hale gelir.
 
+3. **Harita tile istekleri, bakılan bölgeyi üçüncü tarafa gösterir — hassasiyet artarsa kendi tile sunucusu gerekir.**
+   Mobil uygulamada harita için OSMDroid (OpenStreetMap) kullanılıyor; API anahtarı gerektirmemesi nedeniyle bilinçli olarak seçildi. Bunun bedeli şu: harita her açıldığında hangi bölgeye zoom yapıldığı bilgisi OpenStreetMap'in tile sunucularına gider. Yuva koordinatlarının kendisi gönderilmiyor, yalnızca görüntülenen kaba alan. Proje planında kaçak avlanma riski açıkça bir tehdit olarak geçtiği için bu farkındalıkla taşınmalı; yuva konumlarının gizliliği kritik hale gelirse kendi tile sunucunuzu barındırmak (veya haritayı yalnızca yetkili rollere açmak) değerlendirilmeli.
+
 ## Terim Sözlüğü
 
 Staj sorumlusunun paylaştığı mimari terimlerin (Monolith, Microservices, CQRS, JWT, RAG, Redis, Kafka vb.) birer-ikişer cümlelik açıklamaları `docs/terim_sozlugu.md` içinde — kullanmak zorunlu değil ama sunumda sorulursa bilinmeli.
