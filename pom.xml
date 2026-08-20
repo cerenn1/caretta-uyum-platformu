@@ -52,6 +52,19 @@
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+
+		<!-- Uyum raporu PDF uretimi icin. iText yerine OpenPDF secildi: iText 5+
+		     AGPL lisansli (ticari SaaS'ta kaynak acma zorunlulugu getirir), OpenPDF
+		     LGPL/MPL ile ticari kullanima uygun.
+		     NOT: guncel surum 3.0.x, Java 21 class dosyalari ile derlenmis ve bu
+		     projenin java.version=17 hedefiyle CALISMIYOR ("class file has wrong
+		     version 65.0, should be 61.0"). 2.0.5, paket adi com.lowagie.text olan
+		     ve Java 17 ile derlenmis (class file 61.0) son surum - o yuzden o secildi. -->
+		<dependency>
+			<groupId>com.github.librepdf</groupId>
+			<artifactId>openpdf</artifactId>
+			<version>2.0.5</version>
+		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>

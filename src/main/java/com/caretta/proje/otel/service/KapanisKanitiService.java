@@ -2,6 +2,7 @@ package com.caretta.proje.otel.service;
 
 import com.caretta.proje.auth.entity.Rol;
 import com.caretta.proje.auth.entity.User;
+import com.caretta.proje.common.ZamanDilimi;
 import com.caretta.proje.common.exception.DuplicateResourceException;
 import com.caretta.proje.common.exception.GecersizIstekException;
 import com.caretta.proje.common.exception.YetkisizErisimException;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -22,7 +25,11 @@ import java.util.Set;
 public class KapanisKanitiService {
 
     private static final Set<String> IZIN_VERILEN_TIPLER = Set.of("image/jpeg", "image/png");
-    private static final long UYUM_ORANI_DONEM_GUN_SAYISI = 30;
+
+    // Uyum orani endpoint'inin varsayilan donemi (son 30 gun). public: uyum raporu
+    // servisi de tarih araligi verilmediginde ayni varsayilani kullanmak icin buna basvurur,
+    // boylece "son 30 gun" tanimi tek yerde durur.
+    public static final long UYUM_ORANI_DONEM_GUN_SAYISI = 30;
     private static final long MAKS_DOSYA_BOYUTU_BYTE = 10L * 1024 * 1024;
 
     private final KapanisKanitiRepository kapanisKanitiRepository;
@@ -48,7 +55,12 @@ public class KapanisKanitiService {
         }
 
         Long otelId = currentUser.getOtel().getId();
-        LocalDate bugun = LocalDate.now();
+        // Zaman dilimi ACIKCA Turkiye - LocalDate.now() sistem varsayilanini kullanir ve
+        // container UTC'de calisiyor. Kapanis kaniti dogasi geregi gece yuklenir
+        // (20:00-08:00 kisitlamasi), yani Turkiye saatiyle 00:00-03:00 arasi yuklenen bir
+        // kanit UTC'ye gore BIR ONCEKI gune damgalanirdi; bu hem gunun kanit slotunu
+        // yanlis gune harcar hem de uyum raporunu hatali gosterirdi.
+        LocalDate bugun = LocalDate.now(ZamanDilimi.TURKIYE);
 
         if (kapanisKanitiRepository.existsByOtelIdAndTarih(otelId, bugun)) {
             throw new DuplicateResourceException("Bugun icin kapanis kaniti zaten yuklenmis");
@@ -68,27 +80,55 @@ public class KapanisKanitiService {
     }
 
     public UyumOraniResponse uyumOraniHesapla(Long otelId, User currentUser) {
-        if (currentUser.getOtel() == null || !currentUser.getOtel().getId().equals(otelId)) {
-            throw new YetkisizErisimException("Sadece kendi otelinizin uyum oranini goruntuleyebilirsiniz");
-        }
+        otelErisimYetkisiDogrula(otelId, currentUser);
 
-        Otel otel = otelService.getEntity(otelId);
-
-        LocalDate bugun = LocalDate.now();
+        LocalDate bugun = LocalDate.now(ZamanDilimi.TURKIYE);
         LocalDate baslangic = bugun.minusDays(UYUM_ORANI_DONEM_GUN_SAYISI - 1);
 
-        long kanitliGun = kapanisKanitiRepository.countByOtelIdAndTarihBetween(otelId, baslangic, bugun);
-        double uyumOrani = Math.round((kanitliGun / (double) UYUM_ORANI_DONEM_GUN_SAYISI) * 1000.0) / 10.0;
+        return donemUyumOraniHesapla(otelId, baslangic, bugun);
+    }
+
+    /**
+     * Bir kullanicinin belirtilen otelin verilerine (uyum orani, uyum raporu) erisip
+     * erisemeyecegini kontrol eder. Otel var mi diye BAKMADAN once cagrilmali; aksi
+     * halde "var olmayan otelId -> 404, baska otelin id'si -> 403" farki, saldirgana
+     * hangi otelId'lerin gercekte var oldugunu sizdirir.
+     */
+    public void otelErisimYetkisiDogrula(Long otelId, User currentUser) {
+        if (currentUser.getOtel() == null || !currentUser.getOtel().getId().equals(otelId)) {
+            throw new YetkisizErisimException("Sadece kendi otelinizin verilerini goruntuleyebilirsiniz");
+        }
+    }
+
+    /**
+     * Uyum orani hesabinin TEK KAYNAGI. Hem /uyum-orani (son 30 gun) hem de PDF
+     * denetim raporu (istege bagli tarih araligi) ayni metodu cagirir; boylece iki
+     * ayri hesaplama birbirinden sapip raporu guvenilmez hale getirmez.
+     */
+    public UyumOraniResponse donemUyumOraniHesapla(Long otelId, LocalDate baslangic, LocalDate bitis) {
+        Otel otel = otelService.getEntity(otelId);
+
+        long donemGunSayisi = ChronoUnit.DAYS.between(baslangic, bitis) + 1;
+        long kanitliGun = kapanisKanitiRepository.countByOtelIdAndTarihBetween(otelId, baslangic, bitis);
+        double uyumOrani = Math.round((kanitliGun / (double) donemGunSayisi) * 1000.0) / 10.0;
 
         return new UyumOraniResponse(
                 otel.getId(),
                 otel.getAd(),
                 baslangic,
-                bugun,
-                UYUM_ORANI_DONEM_GUN_SAYISI,
+                bitis,
+                donemGunSayisi,
                 kanitliGun,
                 uyumOrani
         );
+    }
+
+    /**
+     * Belirtilen donem icinde kanit yuklenmis tarihlerin listesi. Uyum raporundaki
+     * gun gun dokum tablosu ve eksik gunler listesi bu veriden turetilir.
+     */
+    public List<LocalDate> kanitliTarihleriGetir(Long otelId, LocalDate baslangic, LocalDate bitis) {
+        return kapanisKanitiRepository.findTarihByOtelIdAndTarihBetween(otelId, baslangic, bitis);
     }
 
     private KapanisKanitiResponse toResponse(KapanisKaniti kayit) {
