@@ -28,7 +28,7 @@ Tam proje planı (problem, gelir modeli, mimari gerekçeler, riskler) `docs/proj
 - **Cache:** Redis.
 - **Kimlik doğrulama:** Spring Security + JWT.
 - **Container:** Docker + docker-compose.
-- **Frontend (MVP için minimal):** basit bir HTML/CSS/JavaScript landing page + kayıt formu yeterli (ayrı bir `frontend/` klasöründe), karmaşık bir SPA gerekmiyor.
+- **Frontend:** ~~web (HTML/CSS/JS)~~ **artık kullanılmıyor, proje mobil uygulamaya geçti** — aşağıdaki "Mobil Geçiş" bölümüne bak. `frontend/` klasöründeki eski web arayüzü referans için duruyor ama üzerinde çalışılmıyor.
 
 ## Mimari
 
@@ -98,6 +98,91 @@ Kapanış kanıtı modülü tek ticari özellik olmasın diye, otel/otel çalı�
 3. **Bölgesel Karşılaştırma (Benchmarking):** "Bölgenizdeki otellerin ortalama uyum oranı %X, siz %Y'desiniz." Oteli daha fazla kullanmaya/ödemeye teşvik eden rekabet unsuru.
 4. **Misafire Açık Şeffaflık Sayfası:** Otelin kendi sitesine ekleyebileceği, güncel uyum oranını gösteren halka açık sayfa — pazarlama aracı (gezginlerin sürdürülebilirliğe önem verdiği araştırmayla destekleniyor, bkz. `docs/proje_plani.md`).
 5. **Otomatik Hatırlatma Sistemi:** Otel birkaç gündür kanıt yüklemediyse otomatik uyarı — aboneliği aktif kullanılan bir araç haline getirip iptal riskini azaltır.
+
+## Mobil Geçiş (17 Ağustos 2026 — Güncel Durum)
+
+Staj sorumlusu projenin **web değil, mobil uygulama (Android)** olarak geliştirilmesini istedi. Bu bölüm, VSCode dışında (Android Studio'da) yapılan hazırlığın güncel durumunu özetliyor — Claude Code kod yazmaya başlamadan önce bunu bilmeli.
+
+**Yapılanlar:**
+- Android Studio kuruldu, yeni bir Android projesi oluşturuldu: proje adı `CarettaApp`, konumu `C:\Users\Lenovo\AndroidStudioProjects\CarettaApp` (bu proje, backend'in bulunduğu `CarettaProje` klasöründen **ayrı bir klasörde**).
+- Dil: **Java** (Kotlin değil — kullanıcı Java biliyor, backend de zaten Java).
+- Şablon: Empty Views Activity (klasik XML layout tabanlı, Jetpack Compose değil).
+- Paket adı: `com.caretta.proje` — backend ile aynı kök, tutarlılık için.
+- Minimum SDK: API 24 (Android 7.0).
+- Test için sanal cihaz (emülatör) oluşturuldu: "Medium Phone", Android 17.0 ("CinnamonBun").
+- İlk `MainActivity.java` (boş/varsayılan) oluşturuldu ve emülatörde ilk kez çalıştırıldı.
+
+**Sıradaki adımlar (Claude Code'un yapması gerekenler):**
+1. Mevcut backend'deki (Spring Boot, `CarettaProje` klasörü) endpoint'lere bağlanacak gerçek ekranları yaz: kayıt/giriş ekranı, yuva kaydı ekleme/listeleme ekranı, otel kapanış kanıtı + uyum oranı paneli (yukarıdaki "Güncellenmiş Öncelik" bölümündeki özellik, artık mobilde).
+2. Ağ isteklerinde (Retrofit veya HttpURLConnection, hangisi daha basitse) backend adresi olarak `http://10.0.2.2:8080` kullanılmalı — Android emülatöründen bilgisayarın kendi `localhost`'una bu şekilde ulaşılıyor, normal `localhost` çalışmaz.
+3. Fotoğraf yükleme (kapanış kanıtı) için Android'in kamera/galeri izinlerini ve dosya seçme akışını ekle.
+4. Backend'i (`CarettaProje` klasöründe, `docker compose up` ile) her test öncesi ayrıca ayakta tutmak gerekiyor — iki proje ayrı klasörlerde, birbirine API üzerinden bağlanıyor.
+
+**Kullanıcı için not:** Kullanıcı (Ceren) Java biliyor ama hem Spring Boot'u hem Android geliştirmeyi yeni öğreniyor. Her önemli kod parçasını yazdıktan sonra 2-3 cümleyle basit bir dille ne işe yaradığını açıkla. Büyük kararlar öncesinde (yeni bir kütüphane eklemek, mimariyi değiştirmek gibi) mutlaka sor, kendi başına ilerleme. Zorunlu kurallar (Conventional Commits + scope, .env gizliliği) mobil tarafta da geçerli.
+
+## Detaylı Uygulama Planı (Bu Haftanın Teknik Kapsamı)
+
+Staj sorumlusu: "Bu hafta projenin teknik tüm kısmı bitmiş olmalı ki go-to-market vb. şeylerle geliştirebilelim." Aşağıdaki adımlar **sırayla** yapılacak. Her adım bitince Conventional Commits formatında commit atılacak ve GitHub'a push edilecek.
+
+### Adım 1 — Backend Güvenlik ve Yetkilendirme Sertleştirmesi
+- [ ] `/api/oteller` endpoint'i şu an kimlik doğrulaması olmadan **yazma** işlemine de açık. `GET` herkese açık kalsın (kayıt formu için gerekli), ama `POST` (yeni otel ekleme) sadece kimliği doğrulanmış kullanıcıya açılsın.
+- [ ] Rol bazlı yetkilendirme: `OTEL_CALISANI` rolü olmayan bir kullanıcı `POST /api/kapanis-kaniti` çağıramasın (Spring Security `@PreAuthorize` veya SecurityConfig kuralı).
+- [ ] Yatay yetki kontrolü: bir otel çalışanı yalnızca **kendi oteline** ait kapanış kanıtı yükleyebilsin ve yalnızca kendi otelinin uyum oranını görebilsin (`GET /api/otel/{id}/uyum-orani` çağrısında token'daki `otelId` ile URL'deki `id` karşılaştırılsın).
+- [ ] Dosya yükleme güvenliği: yalnızca `image/jpeg` ve `image/png` içerik tipi kabul edilsin, maksimum 10MB, yüklenen dosya adı sunucuda **yeniden üretilsin** (UUID) — kullanıcının gönderdiği dosya adı doğrudan diske yazılmasın (path traversal riski).
+- [ ] JWT: secret `.env`'den okunsun (koda gömülü olmasın), token süresi makul olsun (örn. 7 gün), süresi dolmuş token reddedilsin.
+- [ ] Şifreler BCrypt ile hash'lensin (Spring Security'nin `BCryptPasswordEncoder`'ı) — düz metin şifre asla saklanmasın.
+- [ ] CORS: mobil uygulama ve yerel test için gerekli origin'ler açık olsun, `*` (herkese açık) bırakılmasın.
+- [ ] Hata mesajlarında stack trace / veritabanı detayı sızmasın (`GlobalExceptionHandler` zaten var, kontrol edilsin).
+
+### Adım 2 — Backend'i GitHub'a Bağla
+- [ ] GitHub'da boş bir repo oluştur (README/gitignore/license **seçmeden**).
+- [ ] `git remote add origin <repo-url>` → `git branch -M master` → `git push -u origin master`.
+- [ ] Push öncesi `git status` ile `.env` dosyasının **kesinlikle** gönderilmediğini doğrula.
+
+### Adım 3 — Mobil Uygulama: Ağ Katmanı
+- [ ] Android projesine ağ kütüphanesi ekle (Retrofit + Gson veya OkHttp — en basiti tercih edilsin).
+- [ ] `AndroidManifest.xml`'e `INTERNET` izni ekle.
+- [ ] Emülatör için backend adresi: `http://10.0.2.2:8080` (bilgisayarın `localhost`'una emülatörden bu adresle ulaşılır).
+- [ ] Geliştirme sırasında HTTP (HTTPS değil) kullanıldığı için `network_security_config.xml` ile sadece bu adrese cleartext izni verilsin — tüm trafiğe değil.
+- [ ] JWT token'ı cihazda güvenli sakla (`EncryptedSharedPreferences`), düz `SharedPreferences` kullanma.
+
+### Adım 4 — Mobil Uygulama: Ekranlar
+- [ ] Giriş ekranı (`LoginActivity`) — email + şifre, başarılı girişte token saklanır.
+- [ ] Kayıt ekranı (`RegisterActivity`) — email, şifre, rol seçimi, otel seçimi/ekleme.
+- [ ] Ana ekran (`MainActivity`) — kullanıcı rolüne göre yönlendirme.
+- [ ] Yuva kaydı ekranı — kayıt ekleme formu + mevcut kayıtların listesi.
+- [ ] Otel kapanış kanıtı paneli — fotoğraf çekme/seçme, yükleme, güncel uyum oranı göstergesi.
+
+### Adım 5 — Test ve Doğrulama
+- [ ] Her ekran emülatörde elle test edilsin (kayıt → giriş → yuva kaydı → kapanış kanıtı → uyum oranı).
+- [ ] Backend'e en az birkaç temel otomatik test yazılsın (auth ve uyum oranı hesaplaması).
+- [ ] Yetkilendirme testi: başka bir otelin uyum oranını çekmeye çalışınca `403` dönmeli.
+
+### Adım 6 — Mobil Uygulamayı GitHub'a Bağla
+- [ ] `CarettaApp` klasöründe `git init`, uygun `.gitignore` (Android Studio'nun ürettiği yeterli), ilk commit ve ayrı bir repo olarak push.
+
+## Agent'lar (Claude Code Subagent Tanımları)
+
+Bu projede tekrar eden işleri ayrı ayrı uzmanlaşmış agent'lara bölüyoruz. Tanım dosyaları `.claude/agents/` klasöründe:
+
+| Agent | Dosya | Ne İşe Yarar |
+|---|---|---|
+| `backend-gelistirici` | `.claude/agents/backend-gelistirici.md` | Spring Boot tarafında entity/endpoint/servis yazar, katmanlı mimariye ve Repository Pattern'e uyar. |
+| `mobil-gelistirici` | `.claude/agents/mobil-gelistirici.md` | Android (Java, XML layout) ekranlarını ve ağ katmanını yazar, `10.0.2.2` kuralını bilir. |
+| `guvenlik-denetci` | `.claude/agents/guvenlik-denetci.md` | Kod yazmaz; yazılan kodu güvenlik/yetkilendirme açısından denetler, `.env` sızıntısı ve açık endpoint arar. |
+| `test-dogrulayici` | `.claude/agents/test-dogrulayici.md` | Yazılan özelliğin gerçekten çalıştığını uçtan uca doğrular, test yazar, kırık akışları raporlar. |
+
+Claude Code bu agent'ları uygun işlerde kendisi çağırmalı; özellikle her özellik bitiminde `guvenlik-denetci` ve `test-dogrulayici` çalıştırılmalı.
+
+## Bilinen Riskler / İleride Yapılacaklar
+
+Güvenlik denetiminde tespit edilen, MVP için engelleyici **olmayan** ama ilgili faza geçmeden önce mutlaka ele alınması gereken maddeler. Bilerek ertelendi — unutulmasın diye buraya yazıldı.
+
+1. **Fotoğraf EXIF verisi temizlenmeli — "Misafire Açık Şeffaflık Sayfası" fazına geçmeden ÖNCE.**
+   Kapanış kanıtı fotoğrafları şu an ham haliyle yükleniyor; EXIF meta verisi (GPS koordinatı, cihaz modeli/markası) temizlenmiyor. Bugün bir sorun değil çünkü fotoğraflar yalnızca backend'de duruyor ve otelin iç denetiminde kullanılıyor. Ancak yukarıdaki Ticari Yol Haritası'nın 4. maddesi (otelin kendi sitesine koyacağı halka açık şeffaflık sayfası) hayata geçerse bu fotoğraflar herkese açılır ve EXIF'teki konum/cihaz bilgisi istenmeden dışarı sızar. O faza başlamadan önce yükleme akışında (istemcide veya backend'de) EXIF temizliği eklenmeli.
+
+2. **Magic-byte (dosya imzası) doğrulaması gerekli — kanıt fotoğrafını dışarı sunan bir endpoint eklenirse.**
+   Dosya tipi doğrulaması şu an `Content-Type` başlığına dayanıyor ve bu başlık istemci tarafından uydurulabilir. Şu an aktif bir risk oluşturmuyor çünkü yüklenen dosyaları geri sunan hiçbir endpoint yok (`uploads/` klasörü dışarı açılmamış durumda). Fotoğrafları görüntületen bir endpoint (örn. `GET /api/kapanis-kaniti/{id}/fotograf`) veya statik dosya sunumu eklenirse, dosyanın gerçek içeriği (magic byte / dosya imzası) doğrulanmalı — aksi halde `image/png` etiketiyle yüklenmiş zararlı bir dosya tarayıcıda çalıştırılabilir hale gelir.
 
 ## Terim Sözlüğü
 

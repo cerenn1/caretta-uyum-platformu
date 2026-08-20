@@ -143,6 +143,13 @@ Bu sistemin asıl amacı katılımı artırmak: ne kadar çok kişi bildirim yap
 - Ödül ortaklıkları için yerel işletme entegrasyon paneli.
 - Gerçek otel/belediye pilot ortaklıkları.
 
+**Faz 1.5 (Otel/Ticari Yol Haritası — kapanış kanıtı modülünden sonra):**
+- Otomatik sertifika raporu (PDF) — Green Key/Travelife başvurusunda kullanılabilecek resmi rapor otomatik üretimi.
+- Zincir otel paneli — birden fazla tesisi olan otel gruplarının tek panelden yönetimi.
+- Bölgesel karşılaştırma (benchmarking) — otelin bölge ortalamasına göre uyum oranı kıyaslaması.
+- Misafire açık şeffaflık sayfası — otelin kendi sitesine ekleyebileceği, güncel uyum oranını gösteren halka açık sayfa.
+- Otomatik hatırlatma sistemi — kanıt yüklenmediğinde otel çalışanına otomatik uyarı.
+
 ---
 
 ## 11. Dürüstçe Belirtilmesi Gereken Riskler ve Sınırlamalar
