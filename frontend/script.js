@@ -115,7 +115,21 @@ function saveSession(token, email, role, otelId) {
   }
 }
 
+// Cikista sadece localStorage degil, DOM'daki hassas veri de temizlenmeli.
+// Aksi halde ortak bir bilgisayarda cikis yapildiktan sonra DevTools'tan
+// "hidden" sinifi kaldirilarak onceki kullanicinin e-postasi, yuva kayitlari
+// (koordinat + not) ve uyum orani hala goruntulenebilir.
+function ekrandakiVeriyiTemizle() {
+  els.panelIcerik.innerHTML = "";
+  els.yuvaList.innerHTML = "";
+  els.otelSelect.innerHTML = "";
+  els.uyumOraniDetay.textContent = "";
+  els.uyumOraniGauge.textContent = "--%";
+  if (haritaKatmani) haritaKatmani.clearLayers();
+}
+
 function clearSession() {
+  ekrandakiVeriyiTemizle();
   state.token = null;
   state.email = null;
   state.role = null;
@@ -161,17 +175,23 @@ async function loadYuvaKayitlari() {
       ? kayitlar.map(renderYuvaCard).join("")
       : '<p class="empty">Henüz kayıt yok. Yukarıdaki formla ilk kaydını ekle.</p>';
   } catch (err) {
-    els.yuvaList.innerHTML = `<p class="empty error">${err.message}</p>`;
+    // textContent kullaniliyor: hata mesaji ileride kullanici girdisi
+    // yansitirsa innerHTML burada XSS acardi.
+    els.yuvaList.innerHTML = "";
+    const p = document.createElement("p");
+    p.className = "empty error";
+    p.textContent = err.message;
+    els.yuvaList.appendChild(p);
   }
 }
 
 function renderYuvaCard(kayit) {
-  const durumEtiket = DURUM_ETIKET[kayit.durum] || kayit.durum;
+  const durumEtiket = DURUM_ETIKET[kayit.durum] || kacisliMetin(kayit.durum);
   return `
     <div class="yuva-card durum-${kayit.durum.toLowerCase()}">
       <div class="yuva-card-header">
         <span class="durum-badge">${durumEtiket}</span>
-        <span class="tarih">${kayit.tarih}</span>
+        <span class="tarih">${kacisliMetin(kayit.tarih)}</span>
       </div>
       <p class="konum">📍 ${kayit.latitude}, ${kayit.longitude}</p>
       ${kayit.notlar ? `<p class="not">${kacisliMetin(kayit.notlar)}</p>` : ""}
@@ -428,8 +448,11 @@ async function loadOtelSecenekleri() {
   try {
     const oteller = await apiRequest("/api/oteller");
     const secili = els.otelSelect.value;
+    // Otel adi POST /api/oteller ile girilen serbest metin - kacis SART.
+    // (Tarayicinin <select> ayristirma kurallari bugun kurtariyor ama bu bir
+    //  guvenlik sinirit degil, tesadufi davranis - ona guvenilmez.)
     els.otelSelect.innerHTML = '<option value="">Otel seç...</option>' +
-      oteller.map((otel) => `<option value="${otel.id}">${otel.ad}</option>`).join("");
+      oteller.map((otel) => `<option value="${kacisliMetin(otel.id)}">${kacisliMetin(otel.ad)}</option>`).join("");
     if (secili) els.otelSelect.value = secili;
   } catch (err) {
     setMessage("yeni-otel", err.message, true);
