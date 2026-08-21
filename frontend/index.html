@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Caretta Uyum Platformu</title>
+<link rel="stylesheet" href="vendor/fonts/inter.css">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -96,6 +98,21 @@
       </form>
     </section>
 
+    <!-- Ana panel: icerigi JS tarafindan role gore uretilir. Otel/uyum kartlari
+         normal kullanici icin DOM'a HIC eklenmez (sadece CSS ile gizlenmez). -->
+    <section id="panel-section" class="card-section hidden">
+      <div class="dashboard-header">
+        <h2>Ana Panel</h2>
+        <span id="user-email-label"></span>
+      </div>
+      <div id="panel-yukleniyor" class="panel-durum">Panel yükleniyor…</div>
+      <div id="panel-hata" class="panel-durum hidden">
+        <p id="panel-hata-mesaj" class="form-message error"></p>
+        <button type="button" id="panel-tekrar-btn" class="btn btn-outline-dark">Tekrar Dene</button>
+      </div>
+      <div id="panel-icerik" class="panel-kartlar hidden"></div>
+    </section>
+
     <section id="dashboard-section" class="card-section hidden">
       <div class="dashboard-header">
         <h2>Yuva / Gözlem Kayıtları</h2>
@@ -130,6 +147,16 @@
         <p class="form-message" data-for="yuva"></p>
       </form>
 
+      <div class="liste-basligi">
+        <h3>Kayıtlarım</h3>
+        <button type="button" id="harita-toggle-btn" class="btn btn-outline-dark">Haritada Göster</button>
+      </div>
+
+      <div id="harita-alani" class="hidden">
+        <div id="harita"></div>
+        <p class="harita-notu">İşaretçiye tıklayınca kaydın tarihi, durumu ve notu görünür.</p>
+      </div>
+
       <div id="yuva-list"></div>
     </section>
 
@@ -139,6 +166,11 @@
       <div class="uyum-orani-alani">
         <div class="gauge-circle" id="uyum-orani-gauge">--%</div>
         <p id="uyum-orani-detay" class="uyum-orani-detay"></p>
+      </div>
+
+      <div class="rapor-alani">
+        <button type="button" id="rapor-indir-btn" class="btn btn-primary">Uyum Raporu İndir (PDF)</button>
+        <p class="form-message" data-for="rapor"></p>
       </div>
 
       <form id="kapanis-kaniti-form">
@@ -155,6 +187,7 @@
     <p>Kaplumbağa Yuvalama Bölgeleri için Kıyı Turizmi Sürdürülebilirlik Uyum Platformu — MVP Prototip</p>
   </footer>
 
+  <script src="vendor/leaflet/leaflet.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

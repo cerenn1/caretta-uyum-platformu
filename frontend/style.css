@@ -312,3 +312,92 @@ footer {
   font-size: 0.8rem;
   color: #6b6b6b;
 }
+
+/* ===========================================================================
+   ANA PANEL / HARITA / RAPOR  (Bolum 1 - islevsel stiller)
+   Renk paleti ve tipografi Bolum 2'de elden gecirilecek.
+   =========================================================================== */
+
+.panel-durum {
+  padding: 12px 0;
+  color: #555;
+}
+
+.panel-kartlar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.panel-kart {
+  background: #fff;
+  border: 1px solid #e2e2e2;
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.panel-kart-baslik {
+  margin: 0 0 10px;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a6d4b;
+}
+
+.panel-satir { margin: 4px 0; }
+.panel-etiket { display: inline-block; min-width: 74px; font-weight: 600; }
+.panel-sayi { font-size: 2rem; font-weight: 700; margin: 4px 0; }
+.panel-detay { margin: 0; color: #555; }
+.bos-durum-metin { margin: 0 0 12px; color: #555; }
+
+/* Uyum orani gostergesi - esik renkleri mobil ve PDF ile AYNI */
+.uyum-oran { font-size: 2.6rem; font-weight: 700; line-height: 1.1; }
+.uyum-oran.uyum-yuksek { color: #2e7d32; }
+.uyum-oran.uyum-orta   { color: #ef6c00; }
+.uyum-oran.uyum-dusuk  { color: #c62828; }
+
+.uyum-cubuk {
+  height: 10px;
+  background: #e6e0d4;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+.uyum-cubuk-dolu { display: block; height: 100%; border-radius: 999px; }
+.uyum-cubuk-dolu.uyum-yuksek { background: #2e7d32; }
+.uyum-cubuk-dolu.uyum-orta   { background: #ef6c00; }
+.uyum-cubuk-dolu.uyum-dusuk  { background: #c62828; }
+
+.uyum-detay { margin: 0 0 12px; color: #555; font-size: 0.92rem; }
+
+/* Durum rozetleri */
+.rozet {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #fff;
+}
+.rozet-basarili { background: #2e7d32; }
+.rozet-uyari    { background: #c62828; }
+
+/* Harita - YUKSEKLIK ZORUNLU, aksi halde Leaflet hic gorunmez */
+#harita {
+  height: 420px;
+  border-radius: 12px;
+  border: 1px solid #e2e2e2;
+}
+.harita-notu { color: #666; font-size: 0.88rem; margin: 8px 0 0; }
+
+.liste-basligi {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 24px 0 12px;
+  flex-wrap: wrap;
+}
+.liste-basligi h3 { margin: 0; }
+
+.rapor-alani { margin: 16px 0 20px; }

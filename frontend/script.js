@@ -32,7 +32,38 @@ const els = {
   uyumOraniGauge: document.getElementById("uyum-orani-gauge"),
   uyumOraniDetay: document.getElementById("uyum-orani-detay"),
   kapanisKanitiForm: document.getElementById("kapanis-kaniti-form"),
+  panelSection: document.getElementById("panel-section"),
+  panelYukleniyor: document.getElementById("panel-yukleniyor"),
+  panelHata: document.getElementById("panel-hata"),
+  panelHataMesaj: document.getElementById("panel-hata-mesaj"),
+  panelTekrarBtn: document.getElementById("panel-tekrar-btn"),
+  panelIcerik: document.getElementById("panel-icerik"),
+  haritaToggleBtn: document.getElementById("harita-toggle-btn"),
+  haritaAlani: document.getElementById("harita-alani"),
+  raporIndirBtn: document.getElementById("rapor-indir-btn"),
 };
+
+// Kullanicidan gelen metni (ornegin yuva notu) HTML'e gomerken kacis yapar.
+// Olmazsa not alanina yazilan <script> gibi bir icerik sayfada CALISIR (XSS).
+function kacisliMetin(deger) {
+  if (deger === null || deger === undefined) return "";
+  return String(deger)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+const DURUM_ETIKET = { AKTIF: "Aktif", CIKIS_YAPTI: "Çıkış Yaptı", RISK_ALTINDA: "Risk Altında" };
+const DURUM_RENK = { AKTIF: "#2e7d32", CIKIS_YAPTI: "#1565c0", RISK_ALTINDA: "#c62828" };
+
+// Uyum orani esikleri mobil uygulama ve PDF raporla AYNI: >=90 yuksek, 70-90 orta, <70 dusuk.
+function esikSinifi(oran) {
+  if (oran >= 90) return "yuksek";
+  if (oran >= 70) return "orta";
+  return "dusuk";
+}
 
 function setMessage(formName, text, isError) {
   const el = document.querySelector(`.form-message[data-for="${formName}"]`);
@@ -51,6 +82,7 @@ function updateAuthUI() {
   const otelCalisani = loggedIn && state.role === "OTEL_CALISANI" && state.otelId;
 
   els.authSection.classList.toggle("hidden", loggedIn);
+  els.panelSection.classList.toggle("hidden", !loggedIn);
   els.dashboardSection.classList.toggle("hidden", !loggedIn);
   els.navLoginBtn.classList.toggle("hidden", loggedIn);
   els.navLogoutBtn.classList.toggle("hidden", !loggedIn);
@@ -130,7 +162,7 @@ async function loadYuvaKayitlari() {
 }
 
 function renderYuvaCard(kayit) {
-  const durumEtiket = { AKTIF: "Aktif", CIKIS_YAPTI: "Çıkış Yaptı", RISK_ALTINDA: "Risk Altında" }[kayit.durum] || kayit.durum;
+  const durumEtiket = DURUM_ETIKET[kayit.durum] || kayit.durum;
   return `
     <div class="yuva-card durum-${kayit.durum.toLowerCase()}">
       <div class="yuva-card-header">
@@ -138,9 +170,180 @@ function renderYuvaCard(kayit) {
         <span class="tarih">${kayit.tarih}</span>
       </div>
       <p class="konum">📍 ${kayit.latitude}, ${kayit.longitude}</p>
-      ${kayit.notlar ? `<p class="not">${kayit.notlar}</p>` : ""}
+      ${kayit.notlar ? `<p class="not">${kacisliMetin(kayit.notlar)}</p>` : ""}
     </div>
   `;
+}
+
+// ---------------------------------------------------------------------------
+// ANA PANEL (dashboard)
+// Tek istek: GET /api/panel-ozeti. Backend role gore veri donuyor - normal
+// kullaniciya otel/uyum alanlari NULL geliyor, yani veri tarayiciya hic inmiyor.
+// Biz de o kartlarin HTML'ini hic URETMIYORUZ (sadece CSS ile gizlemek yeterli degil).
+// ---------------------------------------------------------------------------
+async function loadPanelOzeti() {
+  els.panelYukleniyor.classList.remove("hidden");
+  els.panelHata.classList.add("hidden");
+  els.panelIcerik.classList.add("hidden");
+
+  try {
+    const veri = await apiRequest("/api/panel-ozeti");
+    els.panelIcerik.innerHTML = panelHtmlUret(veri);
+    els.panelYukleniyor.classList.add("hidden");
+    els.panelIcerik.classList.remove("hidden");
+
+    const ekleBtn = document.getElementById("panel-ilk-kayit-btn");
+    if (ekleBtn) {
+      ekleBtn.addEventListener("click", () => {
+        document.getElementById("yuva-form").scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    }
+  } catch (err) {
+    els.panelYukleniyor.classList.add("hidden");
+    els.panelHataMesaj.textContent = err.message;
+    els.panelHata.classList.remove("hidden");
+  }
+}
+
+function panelHtmlUret(veri) {
+  const rolEtiket = veri.role === "OTEL_CALISANI" ? "Otel Çalışanı" : "Kullanıcı";
+  const otelCalisani = veri.role === "OTEL_CALISANI" && veri.otelId !== null && veri.otelId !== undefined;
+
+  let html = `
+    <article class="panel-kart">
+      <h3 class="panel-kart-baslik">Hesabım</h3>
+      <p class="panel-satir"><span class="panel-etiket">E-posta</span> ${kacisliMetin(veri.email)}</p>
+      <p class="panel-satir"><span class="panel-etiket">Rol</span> ${rolEtiket}</p>
+      ${otelCalisani ? `<p class="panel-satir"><span class="panel-etiket">Otel</span> ${kacisliMetin(veri.otelAdi)}</p>` : ""}
+    </article>
+  `;
+
+  // Uyum karti SADECE otel calisani icin uretilir.
+  if (otelCalisani) {
+    const oran = Number(veri.uyumOrani) || 0;
+    const sinif = esikSinifi(oran);
+    const bugunYuklendi = veri.bugunKanitYuklendiMi === true;
+    html += `
+      <article class="panel-kart uyum-kart">
+        <h3 class="panel-kart-baslik">Uyum Durumu</h3>
+        <div class="uyum-oran uyum-${sinif}">%${oran.toFixed(1)}</div>
+        <div class="uyum-cubuk"><span class="uyum-cubuk-dolu uyum-${sinif}" style="width:${Math.min(Math.max(oran, 0), 100)}%"></span></div>
+        <p class="uyum-detay">${kacisliMetin(veri.donemBaslangic)} – ${kacisliMetin(veri.donemBitis)} · ${veri.donemGunSayisi} günde ${veri.kanitYuklenenGunSayisi} gün kanıt</p>
+        <span class="rozet ${bugunYuklendi ? "rozet-basarili" : "rozet-uyari"}">
+          ${bugunYuklendi ? "✓ Bugün kanıt yüklendi" : "⚠ Bugün kanıt bekleniyor"}
+        </span>
+      </article>
+    `;
+  }
+
+  const kayitVar = Number(veri.yuvaKayitToplam) > 0;
+  html += `
+    <article class="panel-kart">
+      <h3 class="panel-kart-baslik">Yuva Kayıtları</h3>
+      ${kayitVar
+        ? `<p class="panel-sayi">${veri.yuvaKayitToplam}</p>
+           <p class="panel-detay">Son kayıt: ${kacisliMetin(veri.sonYuvaKaydiTarih)} · ${DURUM_ETIKET[veri.sonYuvaKaydiDurum] || kacisliMetin(veri.sonYuvaKaydiDurum)}</p>`
+        : `<p class="bos-durum-metin">Sahada gözlemlediğin yuvaları kaydederek başla.</p>
+           <button type="button" id="panel-ilk-kayit-btn" class="btn btn-primary">İlk Kaydını Ekle</button>`}
+    </article>
+  `;
+
+  return html;
+}
+
+// ---------------------------------------------------------------------------
+// UYUM RAPORU (PDF) INDIRME
+// fetch ile indirilir cunku Authorization basligi gerekiyor; duz bir <a href>
+// linki token gonderemez. Gelen govde blob'a alinip gecici bir link ile indirilir.
+// ---------------------------------------------------------------------------
+async function indirUyumRaporu() {
+  if (!state.otelId) return;
+  els.raporIndirBtn.disabled = true;
+  setMessage("rapor", "Rapor hazırlanıyor…", false);
+
+  try {
+    const response = await fetch(`${API_BASE}/api/otel/${state.otelId}/uyum-raporu`, {
+      headers: { Authorization: `Bearer ${state.token}` },
+    });
+
+    if (!response.ok) {
+      // Hata durumunda govde PDF degil JSON olur.
+      const hata = await response.json().catch(() => null);
+      throw new Error(hata && hata.message ? hata.message : "Rapor indirilemedi");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `uyum-raporu-${state.otelId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    setMessage("rapor", "Rapor indirildi.", false);
+  } catch (err) {
+    setMessage("rapor", err.message, true);
+  } finally {
+    els.raporIndirBtn.disabled = false;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// HARITA (Leaflet, yerel dosyadan - CDN kullanilmiyor)
+// Tile'lar OpenStreetMap'ten geliyor, mobildeki OSMDroid ile ayni kaynak.
+// ---------------------------------------------------------------------------
+let harita = null;
+let haritaKatmani = null;
+
+function haritayiHazirla() {
+  if (harita) return;
+  harita = L.map("harita").setView([36.89, 30.71], 10);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "© OpenStreetMap katkıda bulunanları",
+  }).addTo(harita);
+  haritaKatmani = L.layerGroup().addTo(harita);
+}
+
+async function haritayiDoldur() {
+  haritayiHazirla();
+  // Gizliyken olusturulan harita yanlis boyutta kalir; gorunur olunca yenilenmeli.
+  harita.invalidateSize();
+  haritaKatmani.clearLayers();
+
+  let kayitlar;
+  try {
+    kayitlar = await apiRequest("/api/yuva-kayitlari");
+  } catch (err) {
+    return;
+  }
+
+  const noktalar = [];
+  kayitlar.forEach((kayit) => {
+    if (typeof kayit.latitude !== "number" || typeof kayit.longitude !== "number") return;
+    const renk = DURUM_RENK[kayit.durum] || "#555";
+    const isaretci = L.circleMarker([kayit.latitude, kayit.longitude], {
+      radius: 9,
+      color: "#ffffff",
+      weight: 2,
+      fillColor: renk,
+      fillOpacity: 0.95,
+    });
+    isaretci.bindPopup(
+      `<strong>${kacisliMetin(kayit.tarih)}</strong><br>` +
+      `${DURUM_ETIKET[kayit.durum] || kacisliMetin(kayit.durum)}<br>` +
+      `<em>${kayit.notlar ? kacisliMetin(kayit.notlar) : "Not yok"}</em>`
+    );
+    isaretci.addTo(haritaKatmani);
+    noktalar.push([kayit.latitude, kayit.longitude]);
+  });
+
+  if (noktalar.length === 1) {
+    harita.setView(noktalar[0], 14);
+  } else if (noktalar.length > 1) {
+    harita.fitBounds(L.latLngBounds(noktalar), { padding: [40, 40] });
+  }
 }
 
 async function loadOtelSecenekleri() {
@@ -187,6 +390,7 @@ els.navLogoutBtn.addEventListener("click", () => {
 function girisSonrasiHazirla(data) {
   saveSession(data.token, data.email, data.role, data.otelId);
   updateAuthUI();
+  loadPanelOzeti();
   loadYuvaKayitlari();
   if (state.role === "OTEL_CALISANI" && state.otelId) {
     loadUyumOrani(state.otelId);
@@ -280,6 +484,7 @@ els.kapanisKanitiForm.addEventListener("submit", async (e) => {
     setMessage("kapanis-kaniti", "Kapanış kanıtı yüklendi.", false);
     els.kapanisKanitiForm.reset();
     if (state.otelId) loadUyumOrani(state.otelId);
+    loadPanelOzeti();
   } catch (err) {
     setMessage("kapanis-kaniti", err.message, true);
   }
@@ -302,13 +507,26 @@ els.yuvaForm.addEventListener("submit", async (e) => {
     setMessage("yuva", "Kayıt eklendi.", false);
     els.yuvaForm.reset();
     loadYuvaKayitlari();
+    loadPanelOzeti();
+    if (!els.haritaAlani.classList.contains("hidden")) haritayiDoldur();
   } catch (err) {
     setMessage("yuva", err.message, true);
   }
 });
 
+// Yeni olay dinleyicileri
+els.haritaToggleBtn.addEventListener("click", () => {
+  const gizli = els.haritaAlani.classList.toggle("hidden");
+  els.haritaToggleBtn.textContent = gizli ? "Haritada Göster" : "Haritayı Gizle";
+  if (!gizli) haritayiDoldur();
+});
+
+els.raporIndirBtn.addEventListener("click", indirUyumRaporu);
+els.panelTekrarBtn.addEventListener("click", loadPanelOzeti);
+
 updateAuthUI();
 if (state.token) {
+  loadPanelOzeti();
   loadYuvaKayitlari();
   if (state.role === "OTEL_CALISANI" && state.otelId) {
     loadUyumOrani(state.otelId);
