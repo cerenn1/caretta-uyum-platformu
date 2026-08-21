@@ -1,14 +1,44 @@
+/* ===========================================================================
+   RENK PALETI  -  deniz kaplumbagasi koruma temasi
+   Tum bilesenler bu degiskenleri kullanir; layout/HTML dosyalarina renk
+   sabiti (#RRGGBB) YAZILMAZ, boylece paleti tek yerden degistirebilirsin.
+   =========================================================================== */
 :root {
+  /* Deniz - ana kimlik rengi */
   --deniz: #0f5257;
   --deniz-koyu: #0a3a3d;
+  --deniz-acik: #1a6e74;
   --turkuaz: #2fb8ac;
-  --kum: #f4e9d8;
+  --turkuaz-koyu: #24968c;
+
+  /* Kumsal - arka plan ve yuzeyler */
+  --kum: #f6eee0;
   --kum-koyu: #e5d3b3;
+  --kum-cizgi: #ded0b6;
+
+  /* Vurgu - mercan ve yosun */
+  --mercan: #e07a5f;
+  --yosun: #5b8c5a;
+
+  /* Metin */
   --metin: #1f2d2d;
+  --metin-soluk: #5f6f6f;
   --beyaz: #ffffff;
+
+  /* Durum renkleri - esikler mobil ve PDF raporla AYNI */
   --hata: #c1432a;
   --basari: #2f7a4f;
-  --radius: 10px;
+  --uyari: #d98324;
+
+  /* Bicim */
+  --radius: 14px;
+  --radius-kucuk: 10px;
+  --golge: 0 6px 20px rgba(15, 82, 87, 0.10);
+  --golge-kart: 0 2px 10px rgba(15, 82, 87, 0.07);
+  --gecis: 0.18s ease;
+
+  /* Alt sekme cubugu yuksekligi - icerik altinda bosluk birakmak icin */
+  --alt-sekme-yukseklik: 64px;
 }
 
 * {
@@ -17,7 +47,9 @@
 
 body {
   margin: 0;
-  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.55;
   color: var(--metin);
   background: var(--kum);
 }
@@ -98,7 +130,7 @@ body {
 }
 
 main {
-  max-width: 640px;
+  max-width: 940px;
   margin: -2.5rem auto 3rem;
   padding: 0 1.5rem;
 }
@@ -401,3 +433,205 @@ footer {
 .liste-basligi h3 { margin: 0; }
 
 .rapor-alani { margin: 16px 0 20px; }
+
+/* ===========================================================================
+   BOLUM 2 - GORSEL YENILEME
+   Yukaridaki temel kurallarin uzerine gelir. Renkler :root degiskenlerinden.
+   =========================================================================== */
+
+/* --- Tipografi --- */
+h1, h2, h3 { letter-spacing: -0.01em; }
+h2 { font-size: 1.35rem; }
+h3 { font-size: 1.05rem; }
+
+/* --- Butonlar: yumusak kose, belirgin hover --- */
+.btn {
+  border-radius: 999px;
+  padding: 0.72rem 1.5rem;
+  font-weight: 600;
+  font-family: inherit;
+  transition: background var(--gecis), color var(--gecis),
+              transform var(--gecis), box-shadow var(--gecis);
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn:focus-visible { outline: 3px solid var(--turkuaz); outline-offset: 2px; }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+.btn-primary { background: var(--turkuaz); box-shadow: var(--golge-kart); }
+.btn-primary:hover { background: var(--turkuaz-koyu); }
+
+.btn-outline:hover { background: rgba(255, 255, 255, 0.14); }
+
+.btn-outline-dark { border-radius: 999px; }
+.btn-outline-dark:hover { background: var(--deniz); color: var(--beyaz); }
+
+/* --- Kartlar --- */
+.card-section {
+  box-shadow: var(--golge);
+  padding: 1.9rem;
+  margin-bottom: 1.6rem;
+}
+
+/* --- Formlar --- */
+.auth-form input, .auth-form select,
+.yuva-form input, .yuva-form select, .yuva-form textarea,
+#kapanis-kaniti-form input {
+  border-radius: var(--radius-kucuk);
+  border-color: var(--kum-cizgi);
+  transition: border-color var(--gecis), box-shadow var(--gecis);
+}
+.auth-form input:focus, .auth-form select:focus,
+.yuva-form input:focus, .yuva-form select:focus, .yuva-form textarea:focus {
+  outline: none;
+  border-color: var(--turkuaz);
+  box-shadow: 0 0 0 3px rgba(47, 184, 172, 0.18);
+}
+
+.tab-btn { border-radius: 999px; transition: background var(--gecis), color var(--gecis); }
+
+/* --- Panel kartlari --- */
+.panel-kart {
+  background: var(--beyaz);
+  border: 1px solid var(--kum-cizgi);
+  border-radius: var(--radius);
+  box-shadow: var(--golge-kart);
+  padding: 1.2rem 1.3rem;
+  transition: box-shadow var(--gecis), transform var(--gecis);
+}
+.panel-kart:hover { box-shadow: var(--golge); transform: translateY(-2px); }
+
+.panel-kart-baslik { color: var(--deniz-acik); }
+.panel-etiket { color: var(--metin-soluk); font-weight: 600; }
+.panel-sayi { color: var(--deniz); font-size: 2.4rem; }
+.panel-detay, .bos-durum-metin, .harita-notu, .panel-durum { color: var(--metin-soluk); }
+
+/* Uyum karti one ciksin */
+.uyum-kart {
+  border-color: var(--turkuaz);
+  border-width: 1px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbfa 100%);
+}
+.uyum-oran { font-size: 3rem; letter-spacing: -0.02em; }
+.uyum-oran.uyum-yuksek { color: var(--basari); }
+.uyum-oran.uyum-orta   { color: var(--uyari); }
+.uyum-oran.uyum-dusuk  { color: var(--hata); }
+
+.uyum-cubuk { background: var(--kum-koyu); height: 12px; }
+.uyum-cubuk-dolu { transition: width 0.5s ease; }
+.uyum-cubuk-dolu.uyum-yuksek { background: var(--basari); }
+.uyum-cubuk-dolu.uyum-orta   { background: var(--uyari); }
+.uyum-cubuk-dolu.uyum-dusuk  { background: var(--hata); }
+
+/* Rozetler */
+.rozet { box-shadow: var(--golge-kart); }
+.rozet-basarili { background: var(--basari); }
+.rozet-uyari { background: var(--hata); }
+
+/* --- Yuva kayit kartlari --- */
+.yuva-card {
+  border-color: var(--kum-cizgi);
+  border-radius: var(--radius-kucuk);
+  background: var(--beyaz);
+  transition: box-shadow var(--gecis), transform var(--gecis);
+}
+.yuva-card:hover { box-shadow: var(--golge-kart); transform: translateX(2px); }
+.durum-badge { color: var(--deniz-acik); }
+
+/* Bos durum - duz yazi yerine tasarlanmis kutu */
+.empty {
+  border: 1px dashed var(--kum-cizgi);
+  border-radius: var(--radius-kucuk);
+  padding: 1.6rem;
+  text-align: center;
+  background: #fffdf8;
+}
+
+/* --- Harita --- */
+#harita { border-color: var(--kum-cizgi); box-shadow: var(--golge-kart); }
+
+/* --- Alt sekme cubugu (bottom navigation) --- */
+.alt-sekme {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 900;
+  display: flex;
+  background: var(--beyaz);
+  border-top: 1px solid var(--kum-cizgi);
+  box-shadow: 0 -4px 18px rgba(15, 82, 87, 0.10);
+  /* Telefonlarda alttaki sistem cubugunun altinda kalmasin */
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.alt-sekme-btn {
+  flex: 1;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--metin-soluk);
+  padding: 0.5rem 0.25rem 0.55rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-height: var(--alt-sekme-yukseklik);
+  justify-content: center;
+  transition: color var(--gecis), background var(--gecis);
+  border-top: 3px solid transparent;
+}
+.alt-sekme-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.9; }
+.alt-sekme-btn:hover { color: var(--deniz); background: #fbf7ef; }
+.alt-sekme-btn.aktif { color: var(--deniz); border-top-color: var(--turkuaz); }
+.alt-sekme-btn:focus-visible { outline: 3px solid var(--turkuaz); outline-offset: -3px; }
+
+/* Alt cubuk acikken icerik onun altinda kalmasin */
+body.alt-sekme-acik { padding-bottom: calc(var(--alt-sekme-yukseklik) + 12px); }
+
+/* --- Duyarli (responsive) --- */
+@media (max-width: 760px) {
+  .navbar { padding: 1rem 1.2rem; }
+  .hero-content { padding: 0 1.2rem; }
+  .hero-content h1 { font-size: 1.55rem; }
+  main { padding: 0 1rem; }
+  .card-section { padding: 1.2rem; border-radius: var(--radius); }
+  .form-row { flex-direction: column; gap: 0; }
+  .panel-kartlar { grid-template-columns: 1fr; }
+  .uyum-oran { font-size: 2.4rem; }
+  #harita { height: 320px; }
+  .liste-basligi { align-items: stretch; }
+  .liste-basligi .btn { width: 100%; }
+}
+
+@media (max-width: 420px) {
+  .alt-sekme-btn { font-size: 0.66rem; }
+  .alt-sekme-btn svg { width: 20px; height: 20px; }
+}
+
+/* Hareketi azalt tercihi olan kullanicilar icin */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; scroll-behavior: auto !important; }
+  .btn:hover, .panel-kart:hover, .yuva-card:hover { transform: none; }
+}
+
+/* Hesap karti satirlari: uzun e-posta alt satira kaysa bile etiket hizasi bozulmasin */
+.panel-satir {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  margin: 0.35rem 0;
+}
+.panel-etiket {
+  flex: 0 0 62px;
+  min-width: 0;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.panel-deger {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;  /* uzun e-posta kartin disina tasmasin */
+}

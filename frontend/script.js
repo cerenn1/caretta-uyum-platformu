@@ -41,6 +41,7 @@ const els = {
   haritaToggleBtn: document.getElementById("harita-toggle-btn"),
   haritaAlani: document.getElementById("harita-alani"),
   raporIndirBtn: document.getElementById("rapor-indir-btn"),
+  altSekme: document.getElementById("alt-sekme"),
 };
 
 // Kullanicidan gelen metni (ornegin yuva notu) HTML'e gomerken kacis yapar.
@@ -82,6 +83,9 @@ function updateAuthUI() {
   const otelCalisani = loggedIn && state.role === "OTEL_CALISANI" && state.otelId;
 
   els.authSection.classList.toggle("hidden", loggedIn);
+  els.altSekme.classList.toggle("hidden", !loggedIn);
+  document.body.classList.toggle("alt-sekme-acik", loggedIn);
+  if (loggedIn) altSekmeleriKur();
   els.panelSection.classList.toggle("hidden", !loggedIn);
   els.dashboardSection.classList.toggle("hidden", !loggedIn);
   els.navLoginBtn.classList.toggle("hidden", loggedIn);
@@ -212,9 +216,9 @@ function panelHtmlUret(veri) {
   let html = `
     <article class="panel-kart">
       <h3 class="panel-kart-baslik">Hesabım</h3>
-      <p class="panel-satir"><span class="panel-etiket">E-posta</span> ${kacisliMetin(veri.email)}</p>
-      <p class="panel-satir"><span class="panel-etiket">Rol</span> ${rolEtiket}</p>
-      ${otelCalisani ? `<p class="panel-satir"><span class="panel-etiket">Otel</span> ${kacisliMetin(veri.otelAdi)}</p>` : ""}
+      <p class="panel-satir"><span class="panel-etiket">E-posta</span><span class="panel-deger">${kacisliMetin(veri.email)}</span></p>
+      <p class="panel-satir"><span class="panel-etiket">Rol</span><span class="panel-deger">${rolEtiket}</span></p>
+      ${otelCalisani ? `<p class="panel-satir"><span class="panel-etiket">Otel</span><span class="panel-deger">${kacisliMetin(veri.otelAdi)}</span></p>` : ""}
     </article>
   `;
 
@@ -344,6 +348,80 @@ async function haritayiDoldur() {
   } else if (noktalar.length > 1) {
     harita.fitBounds(L.latLngBounds(noktalar), { padding: [40, 40] });
   }
+}
+
+// ---------------------------------------------------------------------------
+// ALT SEKME CUBUGU (bottom navigation)
+// Sekmeler role gore uretilir: otel calisanina ozel sekme, normal kullanici
+// icin DOM'a HIC eklenmez.
+// ---------------------------------------------------------------------------
+const IKON = {
+  anasayfa: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>',
+  liste: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+  harita: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg>',
+  otel: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18"/><path d="M5 20V7l7-4 7 4v13"/><path d="M10 20v-5h4v5"/></svg>',
+};
+
+function altSekmeleriKur() {
+  const otelCalisani = state.role === "OTEL_CALISANI" && Boolean(state.otelId);
+
+  const sekmeler = [
+    { hedef: "panel-section", etiket: "Ana Sayfa", ikon: IKON.anasayfa },
+    { hedef: "dashboard-section", etiket: "Kayıtlarım", ikon: IKON.liste },
+    { hedef: "harita-alani", etiket: "Harita", ikon: IKON.harita, haritaAc: true },
+  ];
+  if (otelCalisani) {
+    sekmeler.push({ hedef: "otel-panel-section", etiket: "Otel Paneli", ikon: IKON.otel });
+  }
+
+  els.altSekme.innerHTML = sekmeler
+    .map((s) => `<button type="button" class="alt-sekme-btn" data-hedef="${s.hedef}">${s.ikon}<span>${s.etiket}</span></button>`)
+    .join("");
+
+  els.altSekme.querySelectorAll(".alt-sekme-btn").forEach((btn, i) => {
+    btn.addEventListener("click", async () => {
+      const sekme = sekmeler[i];
+      // Harita sekmesi: gizliyse once acilir, sonra oraya kaydirilir.
+      if (sekme.haritaAc && els.haritaAlani.classList.contains("hidden")) {
+        els.haritaAlani.classList.remove("hidden");
+        els.haritaToggleBtn.textContent = "Haritayı Gizle";
+        await haritayiDoldur();
+      }
+      const hedefEl = document.getElementById(sekme.hedef);
+      if (hedefEl) hedefEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      aktifSekmeyiIsaretle(sekme.hedef);
+    });
+  });
+
+  aktifSekmeyiIsaretle("panel-section");
+  gozlemciyiKur(sekmeler.map((s) => s.hedef));
+}
+
+function aktifSekmeyiIsaretle(hedef) {
+  els.altSekme.querySelectorAll(".alt-sekme-btn").forEach((btn) => {
+    btn.classList.toggle("aktif", btn.dataset.hedef === hedef);
+  });
+}
+
+// Sayfa kaydirilirken hangi bolumdeysek o sekme isaretlensin.
+let sekmeGozlemci = null;
+function gozlemciyiKur(hedefler) {
+  if (sekmeGozlemci) sekmeGozlemci.disconnect();
+  if (!("IntersectionObserver" in window)) return;
+
+  sekmeGozlemci = new IntersectionObserver(
+    (girdiler) => {
+      const gorunur = girdiler.filter((g) => g.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (gorunur) aktifSekmeyiIsaretle(gorunur.target.id);
+    },
+    { rootMargin: "-45% 0px -45% 0px", threshold: [0, 0.25, 0.5] }
+  );
+
+  hedefler.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) sekmeGozlemci.observe(el);
+  });
 }
 
 async function loadOtelSecenekleri() {
