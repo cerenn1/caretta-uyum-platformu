@@ -56,6 +56,9 @@ function kacisliMetin(deger) {
     .replaceAll("'", "&#39;");
 }
 
+// Backend siniriyla AYNI deger (application.properties: max-file-size=10MB)
+const MAKS_FOTO_BAYT = 10 * 1024 * 1024;
+
 const DURUM_ETIKET = { AKTIF: "Aktif", CIKIS_YAPTI: "Çıkış Yaptı", RISK_ALTINDA: "Risk Altında" };
 const DURUM_RENK = { AKTIF: "#2e7d32", CIKIS_YAPTI: "#1565c0", RISK_ALTINDA: "#c62828" };
 
@@ -579,6 +582,16 @@ els.loginForm.addEventListener("submit", async (e) => {
 
 els.kapanisKanitiForm.addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  // Boyut kontrolu ISTEMCIDE de yapiliyor. Nihai kontrol backend'de (400 doner),
+  // buradaki sadece kullanici deneyimi icin: hata aninda ve net gorunsun, 10MB'i
+  // asan bir dosya bosuna aga verilmesin. Mobil uygulamada da ayni kontrol var.
+  const dosya = els.kapanisKanitiForm.querySelector('input[type="file"]').files[0];
+  if (dosya && dosya.size > MAKS_FOTO_BAYT) {
+    setMessage("kapanis-kaniti", "Fotoğraf 10MB'dan büyük. Lütfen daha düşük çözünürlüklü bir fotoğraf seçin.", true);
+    return;
+  }
+
   const formData = new FormData(els.kapanisKanitiForm);
   try {
     await apiUpload("/api/kapanis-kaniti", formData);
