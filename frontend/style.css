@@ -4,41 +4,72 @@
    sabiti (#RRGGBB) YAZILMAZ, boylece paleti tek yerden degistirebilirsin.
    =========================================================================== */
 :root {
-  /* Deniz - ana kimlik rengi */
-  --deniz: #0f5257;
-  --deniz-koyu: #0a3a3d;
-  --deniz-acik: #1a6e74;
-  --turkuaz: #2fb8ac;
-  --turkuaz-koyu: #24968c;
+  /* ---------- DENIZ AILESI (acikdan koyuya) ---------- */
+  --gok-mavi:        #cfe8f4;   /* acik gokyuzu - genis yuzeyler, kart zemini */
+  --gok-mavi-koyu:   #a9d5e8;   /* gokyuzu vurgusu, cizgi */
+  --turkuaz:         #5fb3b8;   /* ana aksiyon rengi */
+  --turkuaz-koyu:    #3f9299;   /* hover */
+  --deniz:           #2f6f72;   /* baslik / ikincil metin */
+  --lacivert:        #1d4550;   /* en koyu vurgu */
 
-  /* Kumsal - arka plan ve yuzeyler */
-  --kum: #f6eee0;
-  --kum-koyu: #e5d3b3;
-  --kum-cizgi: #ded0b6;
+  /* ---------- KUMSAL AILESI ---------- */
+  --kum-acik:        #fbf5ea;   /* sayfa zemini (ust) */
+  --kum:             #f3e8d5;   /* sayfa zemini (alt) */
+  --kum-koyu:        #e6d3b1;
+  --kum-cizgi:       #e0d0ae;   /* kart cercevesi */
 
-  /* Vurgu - mercan ve yosun */
-  --mercan: #e07a5f;
-  --yosun: #5b8c5a;
+  /* ---------- VURGU RENKLERI ---------- */
+  --mercan:          #e8917a;   /* sicak vurgu - rozet, ikincil buton */
+  --mercan-acik:     #fae0d8;
+  --adacayi:         #86a98a;   /* yumusak yesil */
+  --adacayi-acik:    #dfeade;
 
-  /* Metin */
-  --metin: #1f2d2d;
-  --metin-soluk: #5f6f6f;
-  --beyaz: #ffffff;
+  /* ---------- METIN ---------- */
+  --metin:           #23383c;
+  --metin-soluk:     #64797d;
+  --beyaz:           #ffffff;
 
-  /* Durum renkleri - esikler mobil ve PDF raporla AYNI */
-  --hata: #c1432a;
-  --basari: #2f7a4f;
-  --uyari: #d98324;
+  /* ---------- DURUM (uyum esikleri mobil ve PDF ile AYNI mantik) ---------- */
+  --basari:          #4a8f63;
+  --uyari:           #d9933a;
+  --hata:            #cf5f4a;
 
-  /* Bicim */
-  --radius: 14px;
-  --radius-kucuk: 10px;
-  --golge: 0 6px 20px rgba(15, 82, 87, 0.10);
-  --golge-kart: 0 2px 10px rgba(15, 82, 87, 0.07);
-  --gecis: 0.18s ease;
+  /* ---------- TIPOGRAFI OLCEGI ---------- */
+  --yazi-xs:   0.78rem;
+  --yazi-sm:   0.9rem;
+  --yazi-base: 1rem;
+  --yazi-lg:   1.15rem;
+  --yazi-xl:   1.45rem;
+  --yazi-2xl:  1.9rem;
+  --yazi-3xl:  2.6rem;
+  --yazi-4xl:  3.3rem;
 
-  /* Alt sekme cubugu yuksekligi - icerik altinda bosluk birakmak icin */
+  /* ---------- BOSLUK OLCEGI ---------- */
+  --bosluk-1: 0.35rem;
+  --bosluk-2: 0.7rem;
+  --bosluk-3: 1rem;
+  --bosluk-4: 1.5rem;
+  --bosluk-5: 2rem;
+  --bosluk-6: 3rem;
+  --bosluk-7: 4.5rem;
+
+  /* ---------- BICIM ---------- */
+  --radius:        20px;
+  --radius-kucuk:  14px;
+  --radius-tam:    999px;
+  --golge-yumusak: 0 1px 2px rgba(29, 69, 80, 0.04), 0 8px 24px rgba(29, 69, 80, 0.06);
+  --golge-orta:    0 2px 6px rgba(29, 69, 80, 0.06), 0 14px 34px rgba(29, 69, 80, 0.09);
+  --golge-hover:   0 4px 10px rgba(29, 69, 80, 0.08), 0 20px 46px rgba(29, 69, 80, 0.13);
+  --gecis: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
   --alt-sekme-yukseklik: 64px;
+
+  /* Eski degisken isimleri - onceki kurallar kirilmasin diye yeni tonlara baglandi */
+  --deniz-koyu: #1d4550;
+  --deniz-acik: #2f6f72;
+  --yosun: #86a98a;
+  --golge: var(--golge-orta);
+  --golge-kart: var(--golge-yumusak);
 }
 
 * {
@@ -634,4 +665,220 @@ body.alt-sekme-acik { padding-bottom: calc(var(--alt-sekme-yukseklik) + 12px); }
   flex: 1;
   min-width: 0;
   overflow-wrap: anywhere;  /* uzun e-posta kartin disina tasmasin */
+}
+
+/* ===========================================================================
+   BOLUM 3 - GORSEL DERINLESTIRME
+   Hero illustrasyonu, zengin palet uygulamasi, tipografi hiyerarsisi,
+   yumusak golgeler ve ferah bosluklar. Onceki kurallarin uzerine gelir.
+   =========================================================================== */
+
+/* ---- Sayfa zemini: duz bej yerine yumusak gradyan ---- */
+body {
+  background: linear-gradient(180deg, var(--kum-acik) 0%, var(--kum) 55%, #eef0e7 100%);
+  background-attachment: fixed;
+  font-size: var(--yazi-base);
+}
+
+/* ---- HERO: elle cizilmis kumsal illustrasyonu ---- */
+.hero {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.10) 42%, rgba(251,245,234,0.85) 100%),
+    url("assets/hero-kumsal.svg") center bottom / cover no-repeat,
+    var(--gok-mavi);
+  color: var(--lacivert);
+  padding-bottom: var(--bosluk-7);
+}
+
+.logo { color: var(--lacivert); font-size: var(--yazi-lg); letter-spacing: -0.01em; }
+
+/* Illustrasyon acik oldugu icin hero'daki cerceveli buton koyu tonlara cevrildi */
+.hero .btn-outline {
+  border: 1.5px solid var(--deniz);
+  color: var(--deniz);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(4px);
+}
+.hero .btn-outline:hover { background: var(--beyaz); color: var(--lacivert); }
+
+.hero-content { max-width: 780px; padding-top: var(--bosluk-4); }
+
+.hero-content h1 {
+  font-size: var(--yazi-4xl);
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--lacivert);
+  margin-bottom: var(--bosluk-4);
+  text-wrap: balance;
+}
+
+.hero-content p {
+  font-size: var(--yazi-lg);
+  line-height: 1.65;
+  color: var(--deniz);
+  opacity: 1;
+  max-width: 62ch;
+  margin: 0 auto var(--bosluk-5);
+}
+
+/* ---- Tipografi hiyerarsisi ---- */
+h2 { font-size: var(--yazi-2xl); font-weight: 700; letter-spacing: -0.02em; color: var(--lacivert); }
+h3 { font-size: var(--yazi-lg); font-weight: 600; letter-spacing: -0.01em; color: var(--lacivert); }
+
+.panel-kart-baslik {
+  font-size: var(--yazi-xs);
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  color: var(--deniz);
+}
+
+/* ---- Bolumler arasi nefes ---- */
+main { margin-top: -3.5rem; margin-bottom: var(--bosluk-7); }
+.card-section {
+  border-radius: var(--radius);
+  box-shadow: var(--golge-orta);
+  padding: var(--bosluk-5);
+  margin-bottom: var(--bosluk-5);
+}
+.panel-kartlar { gap: var(--bosluk-4); }
+
+/* ---- Kartlar: daha yuvarlak, katmanli golge, hover ---- */
+.panel-kart {
+  border-radius: var(--radius);
+  box-shadow: var(--golge-yumusak);
+  padding: var(--bosluk-4);
+  border: 1px solid transparent;
+}
+.panel-kart:hover { box-shadow: var(--golge-hover); transform: translateY(-3px); }
+
+/* Her kart ailesine FARKLI ama uyumlu bir ton  */
+.panel-kart:nth-child(1) {                       /* Hesabim - gokyuzu */
+  background: linear-gradient(165deg, #ffffff 0%, var(--gok-mavi) 190%);
+  border-color: var(--gok-mavi-koyu);
+}
+.uyum-kart {                                      /* Uyum - turkuaz */
+  background: linear-gradient(165deg, #ffffff 0%, #e4f3f2 100%);
+  border-color: var(--turkuaz);
+}
+.panel-kart:last-child {                          /* Yuva kayitlari - adacayi */
+  background: linear-gradient(165deg, #ffffff 0%, var(--adacayi-acik) 190%);
+  border-color: #c3d6c2;
+}
+
+.panel-sayi { color: var(--deniz); font-size: var(--yazi-3xl); line-height: 1.05; }
+.panel-etiket { color: var(--metin-soluk); }
+
+/* ---- Uyum orani gostergesi ---- */
+.uyum-oran { font-size: var(--yazi-3xl); font-weight: 700; letter-spacing: -0.03em; }
+.uyum-cubuk { background: #e3ebe6; height: 14px; }
+.uyum-cubuk-dolu { box-shadow: inset 0 1px 2px rgba(255,255,255,0.4); }
+
+/* ---- Rozetler: farkli vurgu renkleri ---- */
+.rozet {
+  padding: 7px 14px;
+  font-size: var(--yazi-sm);
+  box-shadow: var(--golge-yumusak);
+}
+.rozet-basarili { background: var(--adacayi); color: var(--beyaz); }
+.rozet-uyari    { background: var(--mercan); color: #4a2018; }
+
+/* ---- Butonlar ---- */
+.btn { border-radius: var(--radius-tam); font-size: var(--yazi-base); }
+.btn-primary { background: var(--turkuaz); box-shadow: var(--golge-yumusak); }
+.btn-primary:hover { background: var(--turkuaz-koyu); box-shadow: var(--golge-orta); }
+.btn-outline-dark { border-color: var(--turkuaz); color: var(--deniz); }
+.btn-outline-dark:hover { background: var(--turkuaz); color: var(--beyaz); }
+
+/* ---- Sekmeler ---- */
+.tab-btn { background: var(--kum-koyu); color: var(--deniz); font-size: var(--yazi-sm); }
+.tab-btn.active { background: var(--deniz); color: var(--beyaz); }
+
+/* ---- Yuva kayit kartlari: durum rengine gore sol serit ---- */
+.yuva-card { border-radius: var(--radius-kucuk); border-color: var(--kum-cizgi); }
+.yuva-card { border-left: 5px solid var(--turkuaz); }
+.yuva-card.durum-risk_altinda { border-left-color: var(--mercan); }
+.yuva-card.durum-cikis_yapti  { border-left-color: var(--adacayi); }
+.durum-badge { color: var(--deniz); font-size: var(--yazi-xs); letter-spacing: 0.06em; }
+.tarih { color: var(--metin-soluk); font-size: var(--yazi-sm); }
+
+/* ---- Bos durum ---- */
+.empty {
+  border: 1.5px dashed var(--gok-mavi-koyu);
+  background: linear-gradient(165deg, #ffffff 0%, #f4fafc 100%);
+  border-radius: var(--radius-kucuk);
+  padding: var(--bosluk-5);
+  color: var(--metin-soluk);
+}
+
+/* ---- Formlar ---- */
+.auth-form label, .yuva-form label { font-size: var(--yazi-sm); color: var(--deniz); }
+.auth-form input:focus, .auth-form select:focus,
+.yuva-form input:focus, .yuva-form select:focus, .yuva-form textarea:focus {
+  border-color: var(--turkuaz);
+  box-shadow: 0 0 0 3px rgba(95, 179, 184, 0.22);
+}
+
+/* ---- Harita ---- */
+#harita { border-radius: var(--radius-kucuk); border-color: var(--gok-mavi-koyu); box-shadow: var(--golge-yumusak); }
+
+/* ---- Alt sekme cubugu ---- */
+.alt-sekme { border-top-color: var(--kum-cizgi); }
+.alt-sekme-btn.aktif { color: var(--deniz); border-top-color: var(--turkuaz); }
+.alt-sekme-btn:hover { background: #f6fbfc; color: var(--deniz); }
+
+/* ---- Altbilgi ---- */
+footer { color: var(--metin-soluk); font-size: var(--yazi-sm); padding: var(--bosluk-5) var(--bosluk-3); }
+
+@media (max-width: 760px) {
+  .hero-content h1 { font-size: var(--yazi-2xl); }
+  .hero-content p { font-size: var(--yazi-base); }
+  .card-section { padding: var(--bosluk-4); }
+  main { margin-top: -2rem; }
+  .uyum-oran, .panel-sayi { font-size: var(--yazi-2xl); }
+}
+
+/* ---- Katman duzeltmesi ----
+   .hero'ya position:relative verilince kendi yigin baglamini olusturuyor ve
+   main'in ustune boyaniyordu; bu yuzden kartin ustundeki sekmeler hero'nun
+   altinda kalip kirpiliyordu. main'i yukari almak sorunu cozuyor. */
+main {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero metin alanindaki beyaz perde biraz yumusatildi ki illustrasyon
+   ortadan bir bant gibi kesilmis gorunmesin. */
+.hero {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.06) 46%, rgba(251,245,234,0.72) 100%),
+    url("assets/hero-kumsal.svg") center bottom / cover no-repeat,
+    var(--gok-mavi);
+}
+
+/* ---- Hesap karti satirlari: etiket ustte, deger altta ----
+   Onceki yan yana duzende dar kartta uzun e-posta kelime ortasindan
+   bolunuyordu ("kameratest@caret / ta.dev"). Etiketi ustte kucuk bir baslik
+   gibi konumlandirmak hem bolunmeyi onluyor hem daha derli toplu duruyor. */
+.panel-satir {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  margin: 0 0 var(--bosluk-2);
+}
+.panel-etiket {
+  flex: none;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--metin-soluk);
+}
+.panel-deger {
+  flex: none;
+  font-size: var(--yazi-base);
+  color: var(--metin);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
 }
