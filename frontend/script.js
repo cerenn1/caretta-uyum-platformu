@@ -5,10 +5,6 @@ const state = {
   email: localStorage.getItem("caretta_email") || null,
   role: localStorage.getItem("caretta_role") || null,
   otelId: localStorage.getItem("caretta_otel_id") || null,
-  // Konum haritadan mi secildi - backend'de +5 bonus puan tetikliyor (bkz.
-  // mobildeki ayni mantik, YuvaKayitActivity.sonKonumHaritadanSecildiMi).
-  // Kullanici lat/lng alanini elle degistirirse false'a sifirlanir.
-  yuvaHaritadanSecildiMi: false,
 };
 
 const els = {
@@ -22,10 +18,7 @@ const els = {
   loginForm: document.getElementById("login-form"),
   yuvaForm: document.getElementById("yuva-form"),
   yuvaList: document.getElementById("yuva-list"),
-  yuvaLatInput: document.getElementById("yuva-lat-input"),
-  yuvaLngInput: document.getElementById("yuva-lng-input"),
-  konumSeciciToggleBtn: document.getElementById("konum-secici-toggle-btn"),
-  konumSeciciAlani: document.getElementById("konum-secici-alani"),
+  konumSeciliDeger: document.getElementById("konum-secili-deger"),
   userEmailLabel: document.getElementById("user-email-label"),
   registerRole: document.getElementById("register-role"),
   otelSecimAlani: document.getElementById("otel-secim-alani"),
@@ -113,6 +106,9 @@ function updateAuthUI() {
   if (loggedIn) altSekmeleriKur();
   els.panelSection.classList.toggle("hidden", !loggedIn);
   els.dashboardSection.classList.toggle("hidden", !loggedIn);
+  // Konum secici haritasi, kayit formu ilk gorunur oldugunda (giriste) baslatilir -
+  // yuva kaydi eklemeye "baslamak" icin ayri bir adim/buton yok, harita dogrudan hazir.
+  if (loggedIn) konumSeciciHaritayiBaslat();
   els.navLoginBtn.classList.toggle("hidden", loggedIn);
   els.navLogoutBtn.classList.toggle("hidden", !loggedIn);
   els.otelPanelSection.classList.toggle("hidden", !otelCalisani);
@@ -413,58 +409,63 @@ async function haritayiDoldur() {
 }
 
 // ---------------------------------------------------------------------------
-// KONUM SECICI (yuva formu icin "Haritadan Sec") - mobildeki KonumSecActivity
-// ile ayni amac: haritaya tiklayinca enlem/boylam otomatik doluyor ve backend'e
-// haritadanSecildiMi:true gonderilip +5 bonus puan tetikleniyor.
+// KONUM SECICI (yuva formu) - artik TEK akis: enlem/boylam elle yazilamiyor,
+// SADECE haritadan seciliyor. Harita ilk acildiginda tarayici konum izni
+// varsa kullanicinin GERCEK konumuna, yoksa/hata olursa Antalya'ya odaklanir
+// ve HER durumda bir isaretci hazir gelir (kullanici hic dokunmadan da
+// gecerli bir konumla kayit gonderebilir). Kullanici haritaya tiklayarak
+// isaretciyi gercek yuva konumuna tasiyabilir. Bu akis tamamen "haritadan
+// secim" oldugu icin backend'e her zaman haritadanSecildiMi:true gonderilir
+// (GPS'ten gelen baslangic konumu da nihayetinde haritadaki isaretcinin
+// kendisidir, kullanici onu degistirmeden de birakabilir).
 // ---------------------------------------------------------------------------
+const ANTALYA_VARSAYILAN = [36.89, 30.71];
+
 let konumSeciciHarita = null;
 let konumSeciciIsaretci = null;
+let seciliKonum = null; // { lat, lng } - null ise harita henuz hazir degil demektir
 
-function konumSeciciHaritayiHazirla() {
+function konumSeciciHaritayiBaslat() {
   if (konumSeciciHarita) return;
-  konumSeciciHarita = L.map("konum-secici-harita").setView([36.89, 30.71], 9);
+
+  konumSeciciHarita = L.map("konum-secici-harita").setView(ANTALYA_VARSAYILAN, 9);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     attribution: "© OpenStreetMap katkıda bulunanları",
   }).addTo(konumSeciciHarita);
 
   konumSeciciHarita.on("click", (e) => {
-    konumdanSecilenNoktayiUygula(e.latlng.lat, e.latlng.lng);
+    konumuUygula(e.latlng.lat, e.latlng.lng, konumSeciciHarita.getZoom());
   });
+
+  // Varsayilan olarak Antalya'da bir isaretci ile basla - GPS izni yoksa ya da
+  // konum alinamazsa bile kullanici HER ZAMAN gecerli bir konumla kayit
+  // gonderebilsin, uygulama asla "konum yok" durumuna dusmesin.
+  konumuUygula(ANTALYA_VARSAYILAN[0], ANTALYA_VARSAYILAN[1], 9);
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => konumuUygula(pos.coords.latitude, pos.coords.longitude, 14),
+      () => { /* izin reddedildi/hata - Antalya varsayilaninda kalinir, cokme yok */ },
+      { timeout: 8000 }
+    );
+  }
+
+  // Gizliyken (ornegin cikis yapilmis durumdayken) olusturulmus olabilecegi
+  // icin dogru boyutta gorunmesi acisindan bir sonraki "tick"te dogrulanir.
+  setTimeout(() => konumSeciciHarita.invalidateSize(), 0);
 }
 
-function konumdanSecilenNoktayiUygula(lat, lng) {
-  // NOT: .value'ya programatik atama tarayicida "input" olayini TETIKLEMEZ,
-  // yani asagidaki elle-duzenleme dinleyicisi burada devreye girmez - bayrak
-  // dogrudan true kalir. Deger atamasindan SONRA true yazmak yine de mobildeki
-  // (KonumSecActivity) sirayla tutarli olsun diye tercih edildi.
-  els.yuvaLatInput.value = lat.toFixed(6);
-  els.yuvaLngInput.value = lng.toFixed(6);
-  state.yuvaHaritadanSecildiMi = true;
-
+function konumuUygula(lat, lng, zoom) {
+  seciliKonum = { lat, lng };
   if (konumSeciciIsaretci) {
     konumSeciciIsaretci.setLatLng([lat, lng]);
   } else {
     konumSeciciIsaretci = L.marker([lat, lng]).addTo(konumSeciciHarita);
   }
+  konumSeciciHarita.setView([lat, lng], zoom);
+  els.konumSeciliDeger.textContent = `📍 Seçili konum: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 }
-
-els.konumSeciciToggleBtn.addEventListener("click", () => {
-  const gizli = els.konumSeciciAlani.classList.toggle("hidden");
-  els.konumSeciciToggleBtn.textContent = gizli ? "Haritadan Seç" : "Haritayı Gizle";
-  if (!gizli) {
-    konumSeciciHaritayiHazirla();
-    // Gizliyken olusturulan/guncellenen harita yanlis boyutta kalir.
-    setTimeout(() => konumSeciciHarita.invalidateSize(), 0);
-  }
-});
-
-// Kullanici enlem/boylami ELLE degistirirse (haritadan secim sonrasi bile
-// olsa) bonus puan bayragi sifirlanir - aksi halde haritadan secip sonra
-// elle duzenleyen kullanici haksiz bonus almaya devam eder (mobildeki
-// TextWatcher ile ayni mantik).
-els.yuvaLatInput.addEventListener("input", () => { state.yuvaHaritadanSecildiMi = false; });
-els.yuvaLngInput.addEventListener("input", () => { state.yuvaHaritadanSecildiMi = false; });
 
 // ---------------------------------------------------------------------------
 // ALT SEKME CUBUGU (bottom navigation)
@@ -699,22 +700,33 @@ els.kapanisKanitiForm.addEventListener("submit", async (e) => {
 
 els.yuvaForm.addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  // Enlem/boylam artik elle girilmiyor - SADECE haritadaki isaretcinin konumu
+  // kullanilir. konumSeciciHaritayiBaslat() girişte hemen bir varsayilan
+  // isaretci koydugu icin bu normalde hep dolu olur; yine de savunma amacli
+  // kontrol ediliyor (ornegin harita hic baslatilamadiysa).
+  if (!seciliKonum) {
+    setMessage("yuva", "Konum henüz belirlenemedi, lütfen birkaç saniye bekleyip tekrar deneyin.", true);
+    return;
+  }
+
   const formData = new FormData(els.yuvaForm);
   try {
     await apiRequest("/api/yuva-kayitlari", {
       method: "POST",
       body: JSON.stringify({
-        latitude: Number(formData.get("latitude")),
-        longitude: Number(formData.get("longitude")),
+        latitude: seciliKonum.lat,
+        longitude: seciliKonum.lng,
         tarih: formData.get("tarih"),
         durum: formData.get("durum"),
         notlar: formData.get("notlar") || null,
-        haritadanSecildiMi: state.yuvaHaritadanSecildiMi,
+        // Konum artik SADECE haritadan seciliyor (elle giris kaldirildi), yani
+        // bu akis her zaman "haritadan secim" - bonus puan icin hep true gonderilir.
+        haritadanSecildiMi: true,
       }),
     });
     setMessage("yuva", "Kayıt eklendi.", false);
     els.yuvaForm.reset();
-    state.yuvaHaritadanSecildiMi = false;
     loadYuvaKayitlari();
     loadPanelOzeti();
     if (!els.haritaAlani.classList.contains("hidden")) haritayiDoldur();
