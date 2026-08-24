@@ -2,6 +2,7 @@ package com.caretta.proje.yuvatakip.repository;
 
 import com.caretta.proje.yuvatakip.entity.YuvaKaydi;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,4 +19,10 @@ public interface YuvaKaydiRepository extends JpaRepository<YuvaKaydi, Long> {
     // basina deterministik degil; ikincil siralama id ile yapilarak "en son eklenen"
     // her zaman ayni kaydi verir.
     Optional<YuvaKaydi> findFirstByUserIdOrderByTarihDescIdDesc(Long userId);
+
+    // Agregat istatistik endpoint'i icin: en az bir yuva kaydi eklemis DISTINCT
+    // kullanici sayisi. Toplam kayitli kullanici sayisindan farkli - sadece
+    // gercekten katki saglayanlari sayar.
+    @Query("select count(distinct y.user.id) from YuvaKaydi y")
+    long distinctKullaniciSayisi();
 }

@@ -21,4 +21,15 @@ public interface KapanisKanitiRepository extends JpaRepository<KapanisKaniti, Lo
     List<LocalDate> findTarihByOtelIdAndTarihBetween(@Param("otelId") Long otelId,
                                                       @Param("baslangic") LocalDate baslangic,
                                                       @Param("bitis") LocalDate bitis);
+
+    // Agregat istatistik endpoint'i icin: en az bir kapanis kaniti yuklemis
+    // DISTINCT otel sayisi - sadece kayitli otel sayisi degil, "aktif" (gercekten
+    // platformu kullanan) otel sayisini yansitir.
+    @Query("select count(distinct k.otel.id) from KapanisKaniti k")
+    long distinctAktifOtelSayisi();
+
+    // Yukaridaki sayimla ayni kumeyi id listesi olarak doner - istatistik servisi
+    // her aktif otel icin donemUyumOraniHesapla'yi bu id'lerle cagirir.
+    @Query("select distinct k.otel.id from KapanisKaniti k")
+    List<Long> distinctAktifOtelIdListesi();
 }

@@ -58,6 +58,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/oteller").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/oteller").authenticated()
+                        // Kisisel veri icermeyen, tamamen agregat (toplu sayi) istatistikler -
+                        // fon basvurusu/ortaklik gorusmelerinde disariya (Greenpeace, WWF vb.)
+                        // gosterilebilmesi icin bilerek herkese acik birakildi.
+                        .requestMatchers(HttpMethod.GET, "/api/istatistikler").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
