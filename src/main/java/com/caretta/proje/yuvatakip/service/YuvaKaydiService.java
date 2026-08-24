@@ -9,6 +9,7 @@ import com.caretta.proje.yuvatakip.entity.YuvaKaydi;
 import com.caretta.proje.yuvatakip.repository.YuvaKaydiRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -19,6 +20,10 @@ public class YuvaKaydiService {
     private final YuvaKaydiRepository yuvaKaydiRepository;
     private final PuanService puanService;
 
+    // GUVENLIK: yuva kaydi + puan eklemeleri TEK transaction'da atomik olsun diye
+    // @Transactional eklendi - aksi halde kayit basariyla kaydedilip puan eklemesi
+    // (veya tam tersi) yarim kalirsa veri tutarsizligi olusabilirdi.
+    @Transactional
     public YuvaKaydiResponse ekle(YuvaKaydiRequest request, User currentUser) {
         YuvaKaydi kayit = YuvaKaydi.builder()
                 .user(currentUser)

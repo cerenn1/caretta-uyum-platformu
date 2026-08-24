@@ -68,18 +68,47 @@ class IstatistikServiceTest {
     }
 
     @Test
-    void hesapla_IkiAktifOtelinUyumOraniOrtalamasiDogruHesaplanir() {
+    void hesapla_TekAktifOtelVarkenKAnonimlikNedeniyleOrtalamaUyumOraniNullDoner() {
+        istatistikService = new IstatistikService(yuvaKaydiRepository, kapanisKanitiRepository, kapanisKanitiService);
+        when(yuvaKaydiRepository.count()).thenReturn(0L);
+        when(yuvaKaydiRepository.distinctKullaniciSayisi()).thenReturn(0L);
+        when(kapanisKanitiRepository.distinctAktifOtelIdListesi()).thenReturn(List.of(1L));
+
+        IstatistikResponse response = istatistikService.hesapla();
+
+        assertThat(response.aktifOtelSayisi()).isEqualTo(1L);
+        assertThat(response.ortalamaUyumOrani()).isNull();
+    }
+
+    @Test
+    void hesapla_IkiAktifOtelVarkenKAnonimlikNedeniyleOrtalamaUyumOraniNullDoner() {
         istatistikService = new IstatistikService(yuvaKaydiRepository, kapanisKanitiRepository, kapanisKanitiService);
         when(yuvaKaydiRepository.count()).thenReturn(0L);
         when(yuvaKaydiRepository.distinctKullaniciSayisi()).thenReturn(0L);
         when(kapanisKanitiRepository.distinctAktifOtelIdListesi()).thenReturn(List.of(1L, 2L));
-        when(kapanisKanitiService.donemUyumOraniHesapla(eq(1L), any(), any())).thenReturn(uyumOraniResponse(1L, 10.0));
-        when(kapanisKanitiService.donemUyumOraniHesapla(eq(2L), any(), any())).thenReturn(uyumOraniResponse(2L, 50.0));
 
         IstatistikResponse response = istatistikService.hesapla();
 
+        // k-anonimlik esigi (3) altinda kaldigi icin ortalama bastirilmali - aksi
+        // halde bu iki otelin kendi uyum orani sizdirilmis olurdu.
         assertThat(response.aktifOtelSayisi()).isEqualTo(2L);
-        // (10.0 + 50.0) / 2 = 30.0
+        assertThat(response.ortalamaUyumOrani()).isNull();
+    }
+
+    @Test
+    void hesapla_UcAktifOtelinUyumOraniOrtalamasiDogruHesaplanir() {
+        istatistikService = new IstatistikService(yuvaKaydiRepository, kapanisKanitiRepository, kapanisKanitiService);
+        when(yuvaKaydiRepository.count()).thenReturn(0L);
+        when(yuvaKaydiRepository.distinctKullaniciSayisi()).thenReturn(0L);
+        when(kapanisKanitiRepository.distinctAktifOtelIdListesi()).thenReturn(List.of(1L, 2L, 3L));
+        when(kapanisKanitiService.donemUyumOraniHesapla(eq(1L), any(), any())).thenReturn(uyumOraniResponse(1L, 10.0));
+        when(kapanisKanitiService.donemUyumOraniHesapla(eq(2L), any(), any())).thenReturn(uyumOraniResponse(2L, 50.0));
+        when(kapanisKanitiService.donemUyumOraniHesapla(eq(3L), any(), any())).thenReturn(uyumOraniResponse(3L, 30.0));
+
+        IstatistikResponse response = istatistikService.hesapla();
+
+        assertThat(response.aktifOtelSayisi()).isEqualTo(3L);
+        // (10.0 + 50.0 + 30.0) / 3 = 30.0 - k-anonimlik esigine (3) ulasildigi icin artik gercek ortalama donmeli
         assertThat(response.ortalamaUyumOrani()).isEqualTo(30.0);
     }
 

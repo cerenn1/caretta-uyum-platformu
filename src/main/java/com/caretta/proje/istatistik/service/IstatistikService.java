@@ -15,6 +15,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class IstatistikService {
 
+    /**
+     * k-anonimlik esigi: aktif otel sayisi bu degerin ALTINDAYSA ortalamaUyumOrani
+     * bastirilir (null donulur). Bu endpoint kimlik dogrulamasi olmadan (permitAll)
+     * disariya/fon kuruluslarina acik "toplu, kisisel veri icermeyen istatistik"
+     * olarak tasarlandi; ancak aktif otel sayisi 1 veya 2 iken donen ortalama,
+     * pratikte o TEK (veya iki) otelin kendi ozel uyum oranini ifsa eder - bu artik
+     * anonim/toplu bir veri degildir. 3, kucuk orneklem k-anonimligi icin yaygin
+     * kullanilan bir esik degeridir.
+     */
+    private static final int K_ANONIMLIK_ESIGI = 3;
+
     private final YuvaKaydiRepository yuvaKaydiRepository;
     private final KapanisKanitiRepository kapanisKanitiRepository;
     private final KapanisKanitiService kapanisKanitiService;
@@ -39,12 +50,14 @@ public class IstatistikService {
 
     /**
      * Aktif otel yoksa null doner - 0 donmek "oteller var ama uyumsuzlar" gibi
-     * yaniltici bir izlenim yaratirdi. Her aktif otel icin uyum orani, TEK KAYNAK
+     * yaniltici bir izlenim yaratirdi. Aktif otel sayisi K_ANONIMLIK_ESIGI'nin
+     * altindaysa da (k-anonimlik) null doner - aksi halde tek/iki otelin kendi
+     * uyum orani sizdirilmis olur. Her aktif otel icin uyum orani, TEK KAYNAK
      * olan KapanisKanitiService#donemUyumOraniHesapla ile hesaplanir; boylece bu
      * ortalama, /uyum-orani endpoint'iyle ayni "son 30 gun" tanimini kullanir.
      */
     private Double ortalamaUyumOraniHesapla(List<Long> aktifOtelIdListesi) {
-        if (aktifOtelIdListesi.isEmpty()) {
+        if (aktifOtelIdListesi.size() < K_ANONIMLIK_ESIGI) {
             return null;
         }
 
