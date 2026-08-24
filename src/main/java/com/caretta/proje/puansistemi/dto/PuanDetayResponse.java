@@ -1,0 +1,17 @@
+package com.caretta.proje.puansistemi.dto;
+
+/**
+ * Puan/rozet karti tiklaninca acilan detay ekrani icin cevap. Butun alanlar
+ * token'daki kullanicidan turetilir (bkz. PuanDetayController), URL'de id yoktur.
+ */
+public record PuanDetayResponse(
+        long toplamPuan,
+        String rozet,                    // null ise henuz rozet yok
+        long yuvaKayitToplam,
+        String sonrakiRozet,              // null ise zaten ALTIN (en yuksek seviye)
+        Long sonrakiRozeteKalanKayit,      // null ise zaten ALTIN
+        String mevcutRozetOdulu,          // null ise rozet yok
+        String sonrakiRozetOdulu,         // null ise zaten ALTIN
+        String odulTeslimBilgisi          // null ise rozet yok; doluysa nasil talep edilecegi
+) {
+}

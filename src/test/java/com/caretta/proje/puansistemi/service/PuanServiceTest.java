@@ -2,7 +2,9 @@ package com.caretta.proje.puansistemi.service;
 
 import com.caretta.proje.auth.entity.Rol;
 import com.caretta.proje.auth.entity.User;
+import com.caretta.proje.puansistemi.dto.PuanDetayResponse;
 import com.caretta.proje.puansistemi.entity.KullaniciPuani;
+import com.caretta.proje.puansistemi.entity.Rozet;
 import com.caretta.proje.puansistemi.repository.KullaniciPuaniRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -70,5 +72,58 @@ class PuanServiceTest {
         Long toplam = puanService.toplamPuanHesapla(1L);
 
         assertThat(toplam).isEqualTo(0L);
+    }
+
+    @Test
+    void detayHesapla_RozetYokkenSonrakiRozetBronzVeKalanDogruHesaplanir() {
+        puanService = new PuanService(kullaniciPuaniRepository);
+        User kullanici = kullanici();
+        when(kullaniciPuaniRepository.toplamPuanHesapla(1L)).thenReturn(20L);
+
+        // 3 yuva kaydi -> esik olan 5'in altinda, henuz rozet yok.
+        PuanDetayResponse detay = puanService.detayHesapla(kullanici, 3L);
+
+        assertThat(detay.toplamPuan()).isEqualTo(20L);
+        assertThat(detay.rozet()).isNull();
+        assertThat(detay.yuvaKayitToplam()).isEqualTo(3L);
+        assertThat(detay.sonrakiRozet()).isEqualTo(Rozet.BRONZ.name());
+        assertThat(detay.sonrakiRozeteKalanKayit()).isEqualTo(2L);
+        assertThat(detay.mevcutRozetOdulu()).isNull();
+        assertThat(detay.sonrakiRozetOdulu()).isEqualTo(Rozet.BRONZ.getOduAciklamasi());
+        assertThat(detay.odulTeslimBilgisi()).isNull();
+    }
+
+    @Test
+    void detayHesapla_BronzdaykenSonrakiRozetGumusVeKalanDogruHesaplanir() {
+        puanService = new PuanService(kullaniciPuaniRepository);
+        User kullanici = kullanici();
+        when(kullaniciPuaniRepository.toplamPuanHesapla(1L)).thenReturn(70L);
+
+        // 8 yuva kaydi -> BRONZ (esik 5), bir sonraki GUMUS (esik 20), kalan 12.
+        PuanDetayResponse detay = puanService.detayHesapla(kullanici, 8L);
+
+        assertThat(detay.rozet()).isEqualTo(Rozet.BRONZ.name());
+        assertThat(detay.sonrakiRozet()).isEqualTo(Rozet.GUMUS.name());
+        assertThat(detay.sonrakiRozeteKalanKayit()).isEqualTo(12L);
+        assertThat(detay.mevcutRozetOdulu()).isEqualTo(Rozet.BRONZ.getOduAciklamasi());
+        assertThat(detay.sonrakiRozetOdulu()).isEqualTo(Rozet.GUMUS.getOduAciklamasi());
+        assertThat(detay.odulTeslimBilgisi()).isNotNull();
+    }
+
+    @Test
+    void detayHesapla_AltindaykenSonrakiRozetVeKalanNullOdulTeslimBilgisiDolu() {
+        puanService = new PuanService(kullaniciPuaniRepository);
+        User kullanici = kullanici();
+        when(kullaniciPuaniRepository.toplamPuanHesapla(1L)).thenReturn(550L);
+
+        // 55 yuva kaydi -> ALTIN (esik 50), zaten en yuksek seviye.
+        PuanDetayResponse detay = puanService.detayHesapla(kullanici, 55L);
+
+        assertThat(detay.rozet()).isEqualTo(Rozet.ALTIN.name());
+        assertThat(detay.sonrakiRozet()).isNull();
+        assertThat(detay.sonrakiRozeteKalanKayit()).isNull();
+        assertThat(detay.mevcutRozetOdulu()).isEqualTo(Rozet.ALTIN.getOduAciklamasi());
+        assertThat(detay.sonrakiRozetOdulu()).isNull();
+        assertThat(detay.odulTeslimBilgisi()).isNotNull();
     }
 }

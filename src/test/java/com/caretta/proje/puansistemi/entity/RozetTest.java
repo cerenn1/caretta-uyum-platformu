@@ -39,4 +39,30 @@ class RozetTest {
     void hesapla_50KayitAltinDoner() {
         assertThat(Rozet.hesapla(50)).isEqualTo(Rozet.ALTIN);
     }
+
+    @Test
+    void sonraki_BronzdanGumuseGecer() {
+        assertThat(Rozet.BRONZ.sonraki()).isEqualTo(Rozet.GUMUS);
+    }
+
+    @Test
+    void sonraki_GumustenAltinaGecer() {
+        assertThat(Rozet.GUMUS.sonraki()).isEqualTo(Rozet.ALTIN);
+    }
+
+    @Test
+    void sonraki_AltinIcinNullDoner() {
+        assertThat(Rozet.ALTIN.sonraki()).isNull();
+    }
+
+    @Test
+    void esikVeOduAlanlariDogruDoner() {
+        assertThat(Rozet.BRONZ.getEsikYuvaKayitSayisi()).isEqualTo(5);
+        assertThat(Rozet.GUMUS.getEsikYuvaKayitSayisi()).isEqualTo(20);
+        assertThat(Rozet.ALTIN.getEsikYuvaKayitSayisi()).isEqualTo(50);
+
+        assertThat(Rozet.BRONZ.getOduAciklamasi()).isEqualTo("Partner otelde %5 indirim kodu");
+        assertThat(Rozet.GUMUS.getOduAciklamasi()).isEqualTo("Partner otelde %10 indirim kodu");
+        assertThat(Rozet.ALTIN.getOduAciklamasi()).isEqualTo("Partner otelde ücretsiz bir gecelik konaklama");
+    }
 }
