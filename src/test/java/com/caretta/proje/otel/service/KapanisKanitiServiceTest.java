@@ -3,15 +3,19 @@ package com.caretta.proje.otel.service;
 import com.caretta.proje.auth.entity.Rol;
 import com.caretta.proje.auth.entity.User;
 import com.caretta.proje.common.exception.YetkisizErisimException;
+import com.caretta.proje.otel.dto.KapanisKanitiResponse;
 import com.caretta.proje.otel.dto.UyumOraniResponse;
 import com.caretta.proje.otel.entity.Otel;
 import com.caretta.proje.otel.repository.KapanisKanitiRepository;
+import com.caretta.proje.puansistemi.service.PuanService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 
 import java.time.LocalDate;
 
@@ -20,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -37,6 +42,9 @@ class KapanisKanitiServiceTest {
 
     @Mock
     private OtelService otelService;
+
+    @Mock
+    private PuanService puanService;
 
     @InjectMocks
     private KapanisKanitiService kapanisKanitiService;
@@ -137,5 +145,20 @@ class KapanisKanitiServiceTest {
 
         assertThatThrownBy(() -> kapanisKanitiService.uyumOraniHesapla(1L, otelSizKullanici))
                 .isInstanceOf(YetkisizErisimException.class);
+    }
+
+    @Test
+    void yukle_BasariliYuklemeSonrasiBesPuanEklenir() {
+        User calisan = otelCalisani(otelA);
+        MockMultipartFile fotograf = new MockMultipartFile(
+                "fotograf", "kanit.png", MediaType.IMAGE_PNG_VALUE, new byte[]{1, 2, 3});
+
+        lenient().when(kapanisKanitiRepository.existsByOtelIdAndTarih(any(), any())).thenReturn(false);
+        lenient().when(fotografDepolamaServisi.kaydet(any(), any(), any())).thenReturn("dosya.png");
+
+        KapanisKanitiResponse response = kapanisKanitiService.yukle(fotograf, calisan);
+
+        assertThat(response.otelId()).isEqualTo(otelA.getId());
+        verify(puanService).puanEkle(calisan, 5, "KAPANIS_KANITI_YUKLENDI");
     }
 }

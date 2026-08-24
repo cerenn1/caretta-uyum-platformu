@@ -11,8 +11,10 @@ import com.caretta.proje.otel.dto.UyumOraniResponse;
 import com.caretta.proje.otel.entity.KapanisKaniti;
 import com.caretta.proje.otel.entity.Otel;
 import com.caretta.proje.otel.repository.KapanisKanitiRepository;
+import com.caretta.proje.puansistemi.service.PuanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -35,7 +37,12 @@ public class KapanisKanitiService {
     private final KapanisKanitiRepository kapanisKanitiRepository;
     private final FotografDepolamaServisi fotografDepolamaServisi;
     private final OtelService otelService;
+    private final PuanService puanService;
 
+    // GUVENLIK: kanit kaydi + puan eklemesi TEK transaction'da atomik olsun diye
+    // @Transactional eklendi - aksi halde kanit basariyla kaydedilip puan eklemesi
+    // yarim kalirsa (veya tam tersi) veri tutarsizligi olusabilirdi (bkz. YuvaKaydiService.ekle).
+    @Transactional
     public KapanisKanitiResponse yukle(MultipartFile fotograf, User currentUser) {
         if (currentUser.getRole() != Rol.OTEL_CALISANI || currentUser.getOtel() == null) {
             throw new YetkisizErisimException("Sadece bir otele bagli otel calisanlari kapanis kaniti yukleyebilir");
@@ -76,6 +83,13 @@ public class KapanisKanitiService {
                 .build();
 
         kapanisKanitiRepository.save(kayit);
+
+        // Puanlama - GUVENLIK: puan degeri burada sabit olarak belirlenir, istemciden
+        // gelen istekte "puan" diye bir alan yoktur/olsa da dikkate alinmaz. Gunde otel
+        // basina zaten sadece bir kanit yuklenebildigi icin (yukaridaki existsByOtelIdAndTarih
+        // kontrolu) bu +5 puan ekstra bir kisitlamaya gerek kalmadan gunde bir kereyle sinirlidir.
+        puanService.puanEkle(currentUser, 5, "KAPANIS_KANITI_YUKLENDI");
+
         return toResponse(kayit);
     }
 
