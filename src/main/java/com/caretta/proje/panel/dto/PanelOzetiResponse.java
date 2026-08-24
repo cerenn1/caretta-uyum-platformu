@@ -24,6 +24,11 @@ public record PanelOzetiResponse(
         LocalDate donemBitis,
         Long donemGunSayisi,
         Long kanitYuklenenGunSayisi,
-        Boolean bugunKanitYuklendiMi
+        Boolean bugunKanitYuklendiMi,
+
+        // Puan/rozet TUM roller icin doldurulur - otel/uyum alanlarinin aksine
+        // role bagli degil, cunku her kullanici yuva kaydi ekleyebilir.
+        Long toplamPuan,
+        String rozet
 ) {
 }

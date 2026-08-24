@@ -1,6 +1,7 @@
 package com.caretta.proje.yuvatakip.service;
 
 import com.caretta.proje.auth.entity.User;
+import com.caretta.proje.puansistemi.service.PuanService;
 import com.caretta.proje.yuvatakip.dto.YuvaKaydiRequest;
 import com.caretta.proje.yuvatakip.dto.YuvaKaydiResponse;
 import com.caretta.proje.yuvatakip.entity.Mevsim;
@@ -16,6 +17,7 @@ import java.util.List;
 public class YuvaKaydiService {
 
     private final YuvaKaydiRepository yuvaKaydiRepository;
+    private final PuanService puanService;
 
     public YuvaKaydiResponse ekle(YuvaKaydiRequest request, User currentUser) {
         YuvaKaydi kayit = YuvaKaydi.builder()
@@ -28,6 +30,16 @@ public class YuvaKaydiService {
                 .build();
 
         yuvaKaydiRepository.save(kayit);
+
+        // Puanlama - GUVENLIK: puan degerleri burada sabit olarak belirlenir, istemciden
+        // gelen request'te "puan" diye bir alan yoktur/olsa da dikkate alinmaz. Harita
+        // bonusu ayri bir satir olarak eklenir (10 + 5, tek satirda 15 degil) ki
+        // "nasil kazanildigi" ayri ayri denetlenebilsin.
+        puanService.puanEkle(currentUser, 10, "YUVA_KAYDI_EKLENDI");
+        if (Boolean.TRUE.equals(request.haritadanSecildiMi())) {
+            puanService.puanEkle(currentUser, 5, "HARITADAN_KONUM_SECILDI_BONUS");
+        }
+
         return toResponse(kayit);
     }
 

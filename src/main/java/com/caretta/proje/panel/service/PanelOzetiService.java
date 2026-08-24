@@ -8,6 +8,8 @@ import com.caretta.proje.otel.entity.Otel;
 import com.caretta.proje.otel.repository.KapanisKanitiRepository;
 import com.caretta.proje.otel.service.KapanisKanitiService;
 import com.caretta.proje.panel.dto.PanelOzetiResponse;
+import com.caretta.proje.puansistemi.entity.Rozet;
+import com.caretta.proje.puansistemi.service.PuanService;
 import com.caretta.proje.yuvatakip.entity.YuvaKaydi;
 import com.caretta.proje.yuvatakip.repository.YuvaKaydiRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ public class PanelOzetiService {
     private final YuvaKaydiRepository yuvaKaydiRepository;
     private final KapanisKanitiRepository kapanisKanitiRepository;
     private final KapanisKanitiService kapanisKanitiService;
+    private final PuanService puanService;
 
     public PanelOzetiResponse ozetGetir(User currentUser) {
         long yuvaKayitToplam = yuvaKaydiRepository.countByUserId(currentUser.getId());
@@ -69,6 +72,10 @@ public class PanelOzetiService {
             bugunKanitYuklendiMi = kapanisKanitiRepository.existsByOtelIdAndTarih(otel.getId(), bugun);
         }
 
+        // Puan/rozet: rol farki gozetmeksizin TUM kullanicilar icin doldurulur.
+        Long toplamPuan = puanService.toplamPuanHesapla(currentUser.getId());
+        String rozet = Optional.ofNullable(Rozet.hesapla(yuvaKayitToplam)).map(Enum::name).orElse(null);
+
         return new PanelOzetiResponse(
                 currentUser.getEmail(),
                 currentUser.getRole().name(),
@@ -82,7 +89,9 @@ public class PanelOzetiService {
                 donemBitis,
                 donemGunSayisi,
                 kanitYuklenenGunSayisi,
-                bugunKanitYuklendiMi
+                bugunKanitYuklendiMi,
+                toplamPuan,
+                rozet
         );
     }
 }

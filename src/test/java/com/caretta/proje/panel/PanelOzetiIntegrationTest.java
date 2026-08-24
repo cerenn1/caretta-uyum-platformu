@@ -138,7 +138,9 @@ class PanelOzetiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.yuvaKayitToplam").value(0))
                 .andExpect(jsonPath("$.sonYuvaKaydiTarih").doesNotExist())
-                .andExpect(jsonPath("$.sonYuvaKaydiDurum").doesNotExist());
+                .andExpect(jsonPath("$.sonYuvaKaydiDurum").doesNotExist())
+                .andExpect(jsonPath("$.toplamPuan").value(0))
+                .andExpect(jsonPath("$.rozet").doesNotExist());
     }
 
     @Test
@@ -162,7 +164,67 @@ class PanelOzetiIntegrationTest {
                 .andExpect(jsonPath("$.donemBitis").doesNotExist())
                 .andExpect(jsonPath("$.donemGunSayisi").doesNotExist())
                 .andExpect(jsonPath("$.kanitYuklenenGunSayisi").doesNotExist())
-                .andExpect(jsonPath("$.bugunKanitYuklendiMi").doesNotExist());
+                .andExpect(jsonPath("$.bugunKanitYuklendiMi").doesNotExist())
+                // 2 yuva kaydi x 10 puan = 20; esik 5'in altinda oldugu icin rozet yok.
+                .andExpect(jsonPath("$.toplamPuan").value(20))
+                .andExpect(jsonPath("$.rozet").doesNotExist());
+    }
+
+    @Test
+    void panelOzeti_BesYuvaKaydiSonrasiBronzRozetVeElliPuanDoner() throws Exception {
+        String token = normalKullaniciKaydolVeTokenAl();
+        for (int i = 1; i <= 5; i++) {
+            yuvaKaydiEkle(token, "2026-08-0" + i, "AKTIF");
+        }
+
+        mockMvc.perform(get("/api/panel-ozeti")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.yuvaKayitToplam").value(5))
+                .andExpect(jsonPath("$.toplamPuan").value(50))
+                .andExpect(jsonPath("$.rozet").value("BRONZ"));
+    }
+
+    @Test
+    void panelOzeti_HaritadanSecildiMiTrueIsePuanaBesEkBonusYansir() throws Exception {
+        String token = normalKullaniciKaydolVeTokenAl();
+        String body = """
+                {"latitude":36.85,"longitude":30.7,"tarih":"2026-08-10","durum":"AKTIF","notlar":"harita testi","haritadanSecildiMi":true}
+                """;
+
+        mockMvc.perform(post("/api/yuva-kayitlari")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/panel-ozeti")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                // 1 kayit: temel 10 + harita bonusu 5 = 15 (tek satirda degil, iki ayri islemin toplami).
+                .andExpect(jsonPath("$.toplamPuan").value(15));
+    }
+
+    @Test
+    void panelOzeti_YuvaKaydiIstegindeFazladanPuanAlaniGonderilirseYokSayilir() throws Exception {
+        // GUVENLIK: istemci "puan" diye var olmayan bir alan gonderse bile bu alan
+        // sessizce yok sayilir (Jackson bilinmeyen alanlari yoksayar), sunucu puani
+        // kendi sabit degeriyle (10) hesaplar - istemciden puan enjekte edilemez.
+        String token = normalKullaniciKaydolVeTokenAl();
+        String body = """
+                {"latitude":36.85,"longitude":30.7,"tarih":"2026-08-10","durum":"AKTIF","notlar":"guvenlik testi","puan":999999}
+                """;
+
+        mockMvc.perform(post("/api/yuva-kayitlari")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/panel-ozeti")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.toplamPuan").value(10));
     }
 
     @Test

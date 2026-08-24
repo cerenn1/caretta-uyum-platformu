@@ -10,6 +10,12 @@ public record YuvaKaydiRequest(
         @NotNull Double longitude,
         @NotNull LocalDate tarih,
         @NotNull YuvaDurumu durum,
-        String notlar
+        String notlar,
+
+        // Opsiyonel: konum haritadan mi secildi (mobildeki "Haritadan Sec" ozelligi)
+        // yoksa GPS/manuel mi girildi. Eski istemciler/web formu bu alani hic
+        // gondermez, o durumda null gelir ve null = false gibi davranilir
+        // (bkz. YuvaKaydiService.ekle - harita bonus puani).
+        Boolean haritadanSecildiMi
 ) {
 }
