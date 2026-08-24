@@ -89,6 +89,54 @@ body {
   display: none !important;
 }
 
+/* ---- Puan/rozet detay modali ---- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 30, 35, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+.modal-kutu {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 420px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+.modal-kapat-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #888;
+  padding: 4px 8px;
+}
+.modal-kapat-btn:hover { color: #333; }
+.puan-detay-satir { margin: 10px 0; }
+.puan-detay-etiket { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #777; display: block; margin-bottom: 2px; }
+.puan-detay-buyuk { font-size: 1.8rem; font-weight: 700; }
+.puan-detay-odul-kutu {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fff8e6;
+  border: 1px solid #f0dca0;
+  font-size: 0.9rem;
+}
+.puan-detay-aciklama { font-size: 0.85rem; color: #666; margin-top: 14px; line-height: 1.5; }
+
 .btn {
   border: none;
   border-radius: var(--radius);
@@ -802,8 +850,16 @@ main { margin-top: -3.5rem; margin-bottom: var(--bosluk-7); }
 .puan-kart {                                      /* Puan ve rozet - sicak kumsal tonu */
   background: linear-gradient(165deg, #ffffff 0%, var(--kum) 190%);
   border-color: var(--kum-koyu);
+  cursor: pointer;
 }
+.puan-kart:focus-visible { outline: 2px solid var(--turkuaz); outline-offset: 2px; }
 .puan-birim { font-size: var(--yazi-sm); font-weight: 500; color: var(--metin-soluk); }
+.puan-detay-tikla-notu { font-size: var(--yazi-xs); color: var(--metin-soluk); margin-top: 6px; }
+
+/* Puan detay modali - genel palet ile uyumlu */
+.modal-kutu { border-radius: var(--radius); box-shadow: var(--golge-hover); }
+.puan-detay-buyuk { color: var(--deniz); }
+.puan-detay-odul-kutu { background: var(--mercan-acik); border-color: var(--mercan); }
 
 .panel-sayi { color: var(--deniz); font-size: var(--yazi-3xl); line-height: 1.05; }
 .panel-etiket { color: var(--metin-soluk); }

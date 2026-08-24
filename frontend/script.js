@@ -43,6 +43,9 @@ const els = {
   haritaAlani: document.getElementById("harita-alani"),
   raporIndirBtn: document.getElementById("rapor-indir-btn"),
   altSekme: document.getElementById("alt-sekme"),
+  puanDetayModal: document.getElementById("puan-detay-modal"),
+  puanDetayIcerik: document.getElementById("puan-detay-icerik"),
+  puanDetayKapatBtn: document.getElementById("puan-detay-kapat-btn"),
 };
 
 // Kullanicidan gelen metni (ornegin yuva notu) HTML'e gomerken kacis yapar.
@@ -147,6 +150,7 @@ function ekrandakiVeriyiTemizle() {
   els.uyumOraniDetay.textContent = "";
   els.uyumOraniGauge.textContent = "--%";
   if (haritaKatmani) haritaKatmani.clearLayers();
+  els.puanDetayModal.classList.add("hidden");
 }
 
 function clearSession() {
@@ -245,6 +249,17 @@ async function loadPanelOzeti() {
         document.getElementById("yuva-form").scrollIntoView({ behavior: "smooth", block: "center" });
       });
     }
+
+    const puanKart = document.getElementById("puan-kart");
+    if (puanKart) {
+      puanKart.addEventListener("click", puanDetayiniAc);
+      puanKart.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          puanDetayiniAc();
+        }
+      });
+    }
   } catch (err) {
     els.panelYukleniyor.classList.add("hidden");
     els.panelHataMesaj.textContent = err.message;
@@ -271,12 +286,13 @@ function panelHtmlUret(veri) {
   const toplamPuan = Number(veri.toplamPuan) || 0;
   const rozetBilgi = ROZET_ETIKET[veri.rozet];
   html += `
-    <article class="panel-kart puan-kart">
+    <article class="panel-kart puan-kart" id="puan-kart" role="button" tabindex="0" aria-label="Puan ve rozet detayını gör">
       <h3 class="panel-kart-baslik">Puan ve Rozet</h3>
       <p class="panel-sayi">${toplamPuan} <span class="puan-birim">puan</span></p>
       ${rozetBilgi
         ? `<span class="rozet rozet-${rozetBilgi.sinif}">${rozetBilgi.etiket}</span>`
         : `<p class="panel-detay">Henüz rozet yok · Bronz rozete ${Math.max(0, 5 - Number(veri.yuvaKayitToplam || 0))} kayıt kaldı</p>`}
+      <p class="puan-detay-tikla-notu">Detay için tıkla →</p>
     </article>
   `;
 
@@ -312,6 +328,90 @@ function panelHtmlUret(veri) {
 
   return html;
 }
+
+// ---------------------------------------------------------------------------
+// PUAN/ROZET DETAY MODALI - "Puan ve Rozet" kartina tiklaninca GET /api/puan-detay
+// cekilip modal icinde gosterilir. Puan kazanma aciklamasi burada SABIT/statik
+// metin - backend'den kisisel olmayan, genel bir aciklama gelmiyor cunku bu
+// herkes icin ayni (mobil tarafta da ayni statik metin kullanilir, tutarlilik icin).
+// ---------------------------------------------------------------------------
+async function puanDetayiniAc() {
+  els.puanDetayIcerik.innerHTML = "<p>Yükleniyor…</p>";
+  els.puanDetayModal.classList.remove("hidden");
+
+  try {
+    const veri = await apiRequest("/api/puan-detay");
+    els.puanDetayIcerik.innerHTML = puanDetayHtmlUret(veri);
+  } catch (err) {
+    els.puanDetayIcerik.innerHTML = `<p class="form-message error">${kacisliMetin(err.message)}</p>`;
+  }
+}
+
+function puanDetayHtmlUret(veri) {
+  const mevcutRozetBilgi = ROZET_ETIKET[veri.rozet];
+  const sonrakiRozetBilgi = ROZET_ETIKET[veri.sonrakiRozet];
+
+  let html = `
+    <div class="puan-detay-satir">
+      <span class="puan-detay-etiket">Toplam Puan</span>
+      <span class="puan-detay-buyuk">${Number(veri.toplamPuan) || 0}</span>
+    </div>
+    <div class="puan-detay-satir">
+      <span class="puan-detay-etiket">Mevcut Rozet</span>
+      ${mevcutRozetBilgi
+        ? `<span class="rozet rozet-${mevcutRozetBilgi.sinif}">${mevcutRozetBilgi.etiket}</span>`
+        : `<span>Henüz yok</span>`}
+    </div>
+  `;
+
+  if (sonrakiRozetBilgi && veri.sonrakiRozeteKalanKayit !== null && veri.sonrakiRozeteKalanKayit !== undefined) {
+    html += `
+      <div class="puan-detay-satir">
+        <span class="puan-detay-etiket">Sıradaki Rozet</span>
+        <span>${sonrakiRozetBilgi.etiket} için ${veri.sonrakiRozeteKalanKayit} kayıt daha kaldı</span>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="puan-detay-satir">
+        <span class="puan-detay-etiket">Sıradaki Rozet</span>
+        <span>En üst seviyeye ulaştın 🎉</span>
+      </div>
+    `;
+  }
+
+  if (veri.mevcutRozetOdulu) {
+    html += `
+      <div class="puan-detay-odul-kutu">
+        <strong>🎁 Ödülün: ${kacisliMetin(veri.mevcutRozetOdulu)}</strong><br>
+        ${kacisliMetin(veri.odulTeslimBilgisi || "")}
+      </div>
+    `;
+  }
+
+  html += `
+    <p class="puan-detay-aciklama">
+      Puan nasıl kazanılır: yuva/gözlem kaydı eklemek <strong>+10 puan</strong>,
+      konumu haritadan seçmek <strong>+5 bonus</strong> kazandırır. Otel çalışanları
+      için günlük kapanış kanıtı fotoğrafı yüklemek <strong>+5 puan</strong> kazandırır.
+      Rozetler toplam yuva kaydı sayına göre otomatik verilir: Bronz 5, Gümüş 20, Altın 50 kayıt.
+    </p>
+  `;
+
+  return html;
+}
+
+function puanDetayiniKapat() {
+  els.puanDetayModal.classList.add("hidden");
+}
+
+els.puanDetayKapatBtn.addEventListener("click", puanDetayiniKapat);
+els.puanDetayModal.addEventListener("click", (e) => {
+  if (e.target === els.puanDetayModal) puanDetayiniKapat();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !els.puanDetayModal.classList.contains("hidden")) puanDetayiniKapat();
+});
 
 // ---------------------------------------------------------------------------
 // UYUM RAPORU (PDF) INDIRME

@@ -188,6 +188,15 @@
        Otel calisanina ozel sekme, normal kullanici icin DOM'a hic eklenmez. -->
   <nav id="alt-sekme" class="alt-sekme hidden" aria-label="Ana gezinme"></nav>
 
+  <!-- Puan/rozet detay modali: icerigi GET /api/puan-detay cevabindan JS ile uretilir. -->
+  <div id="puan-detay-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="puan-detay-baslik">
+    <div class="modal-kutu">
+      <button type="button" id="puan-detay-kapat-btn" class="modal-kapat-btn" aria-label="Kapat">&times;</button>
+      <h3 id="puan-detay-baslik">Puan ve Rozet Detayı</h3>
+      <div id="puan-detay-icerik"></div>
+    </div>
+  </div>
+
   <script src="vendor/leaflet/leaflet.js"></script>
   <script src="script.js"></script>
 </body>
