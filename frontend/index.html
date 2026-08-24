@@ -121,11 +121,16 @@
       <form id="yuva-form" class="yuva-form">
         <div class="form-row">
           <label>Enlem (latitude)
-            <input type="number" step="any" name="latitude" placeholder="ör. 36.8560" required>
+            <input type="number" step="any" name="latitude" id="yuva-lat-input" placeholder="ör. 36.8560" required>
           </label>
           <label>Boylam (longitude)
-            <input type="number" step="any" name="longitude" placeholder="ör. 30.7280" required>
+            <input type="number" step="any" name="longitude" id="yuva-lng-input" placeholder="ör. 30.7280" required>
           </label>
+        </div>
+        <button type="button" id="konum-secici-toggle-btn" class="btn btn-outline-dark">Haritadan Seç</button>
+        <div id="konum-secici-alani" class="hidden">
+          <div id="konum-secici-harita"></div>
+          <p class="harita-notu">Haritada bir noktaya tıklayarak enlem/boylamı otomatik doldur.</p>
         </div>
         <div class="form-row">
           <label>Tarih

@@ -5,6 +5,10 @@ const state = {
   email: localStorage.getItem("caretta_email") || null,
   role: localStorage.getItem("caretta_role") || null,
   otelId: localStorage.getItem("caretta_otel_id") || null,
+  // Konum haritadan mi secildi - backend'de +5 bonus puan tetikliyor (bkz.
+  // mobildeki ayni mantik, YuvaKayitActivity.sonKonumHaritadanSecildiMi).
+  // Kullanici lat/lng alanini elle degistirirse false'a sifirlanir.
+  yuvaHaritadanSecildiMi: false,
 };
 
 const els = {
@@ -18,6 +22,10 @@ const els = {
   loginForm: document.getElementById("login-form"),
   yuvaForm: document.getElementById("yuva-form"),
   yuvaList: document.getElementById("yuva-list"),
+  yuvaLatInput: document.getElementById("yuva-lat-input"),
+  yuvaLngInput: document.getElementById("yuva-lng-input"),
+  konumSeciciToggleBtn: document.getElementById("konum-secici-toggle-btn"),
+  konumSeciciAlani: document.getElementById("konum-secici-alani"),
   userEmailLabel: document.getElementById("user-email-label"),
   registerRole: document.getElementById("register-role"),
   otelSecimAlani: document.getElementById("otel-secim-alani"),
@@ -405,6 +413,60 @@ async function haritayiDoldur() {
 }
 
 // ---------------------------------------------------------------------------
+// KONUM SECICI (yuva formu icin "Haritadan Sec") - mobildeki KonumSecActivity
+// ile ayni amac: haritaya tiklayinca enlem/boylam otomatik doluyor ve backend'e
+// haritadanSecildiMi:true gonderilip +5 bonus puan tetikleniyor.
+// ---------------------------------------------------------------------------
+let konumSeciciHarita = null;
+let konumSeciciIsaretci = null;
+
+function konumSeciciHaritayiHazirla() {
+  if (konumSeciciHarita) return;
+  konumSeciciHarita = L.map("konum-secici-harita").setView([36.89, 30.71], 9);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "© OpenStreetMap katkıda bulunanları",
+  }).addTo(konumSeciciHarita);
+
+  konumSeciciHarita.on("click", (e) => {
+    konumdanSecilenNoktayiUygula(e.latlng.lat, e.latlng.lng);
+  });
+}
+
+function konumdanSecilenNoktayiUygula(lat, lng) {
+  // NOT: .value'ya programatik atama tarayicida "input" olayini TETIKLEMEZ,
+  // yani asagidaki elle-duzenleme dinleyicisi burada devreye girmez - bayrak
+  // dogrudan true kalir. Deger atamasindan SONRA true yazmak yine de mobildeki
+  // (KonumSecActivity) sirayla tutarli olsun diye tercih edildi.
+  els.yuvaLatInput.value = lat.toFixed(6);
+  els.yuvaLngInput.value = lng.toFixed(6);
+  state.yuvaHaritadanSecildiMi = true;
+
+  if (konumSeciciIsaretci) {
+    konumSeciciIsaretci.setLatLng([lat, lng]);
+  } else {
+    konumSeciciIsaretci = L.marker([lat, lng]).addTo(konumSeciciHarita);
+  }
+}
+
+els.konumSeciciToggleBtn.addEventListener("click", () => {
+  const gizli = els.konumSeciciAlani.classList.toggle("hidden");
+  els.konumSeciciToggleBtn.textContent = gizli ? "Haritadan Seç" : "Haritayı Gizle";
+  if (!gizli) {
+    konumSeciciHaritayiHazirla();
+    // Gizliyken olusturulan/guncellenen harita yanlis boyutta kalir.
+    setTimeout(() => konumSeciciHarita.invalidateSize(), 0);
+  }
+});
+
+// Kullanici enlem/boylami ELLE degistirirse (haritadan secim sonrasi bile
+// olsa) bonus puan bayragi sifirlanir - aksi halde haritadan secip sonra
+// elle duzenleyen kullanici haksiz bonus almaya devam eder (mobildeki
+// TextWatcher ile ayni mantik).
+els.yuvaLatInput.addEventListener("input", () => { state.yuvaHaritadanSecildiMi = false; });
+els.yuvaLngInput.addEventListener("input", () => { state.yuvaHaritadanSecildiMi = false; });
+
+// ---------------------------------------------------------------------------
 // ALT SEKME CUBUGU (bottom navigation)
 // Sekmeler role gore uretilir: otel calisanina ozel sekme, normal kullanici
 // icin DOM'a HIC eklenmez.
@@ -647,10 +709,12 @@ els.yuvaForm.addEventListener("submit", async (e) => {
         tarih: formData.get("tarih"),
         durum: formData.get("durum"),
         notlar: formData.get("notlar") || null,
+        haritadanSecildiMi: state.yuvaHaritadanSecildiMi,
       }),
     });
     setMessage("yuva", "Kayıt eklendi.", false);
     els.yuvaForm.reset();
+    state.yuvaHaritadanSecildiMi = false;
     loadYuvaKayitlari();
     loadPanelOzeti();
     if (!els.haritaAlani.classList.contains("hidden")) haritayiDoldur();

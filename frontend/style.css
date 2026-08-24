@@ -464,6 +464,15 @@ footer {
 }
 .harita-notu { color: #666; font-size: 0.88rem; margin: 8px 0 0; }
 
+#konum-secici-harita {
+  height: 280px;
+  border-radius: 12px;
+  border: 1px solid #e2e2e2;
+  margin-top: 8px;
+  cursor: crosshair;
+}
+#konum-secici-toggle-btn { margin-bottom: 8px; }
+
 .liste-basligi {
   display: flex;
   align-items: center;
@@ -591,6 +600,7 @@ h3 { font-size: 1.05rem; }
 
 /* --- Harita --- */
 #harita { border-color: var(--kum-cizgi); box-shadow: var(--golge-kart); }
+#konum-secici-harita { border-color: var(--kum-cizgi); box-shadow: var(--golge-kart); }
 
 /* --- Alt sekme cubugu (bottom navigation) --- */
 .alt-sekme {
