@@ -160,3 +160,14 @@ Bu sistemin asıl amacı katılımı artırmak: ne kadar çok kişi bildirim yap
 - Vatandaş bildirim modülü doğrulama olmadan güvenilmez; moderasyon akışı opsiyonel değil, zorunlu bileşen.
 - Puan/ödül sisteminin sürdürülebilirliği yerel işletme ortaklıklarının kurulmasına bağlı; bu bir varsayım, garanti değil.
 - Regülasyon detayları (ceza tutarı, bölge sınıflandırması) haber kaynaklarından derlenmiştir; resmi ürünleştirmede Çevre, Şehircilik ve İklim Değişikliği Bakanlığı'nın güncel yönetmelik metniyle doğrulanmalıdır.
+
+---
+
+## 12. Potansiyel Ortaklıklar ve Fon Kaynakları
+
+Platformun elindeki veri (doğrulanmış yuva kaydı sayısı, katkı sağlayan kullanıcı sayısı, otellerin uyum oranı ortalaması) sadece iç kullanım için değil, dışarıya — çevre STK'ları ve fon veren kuruluşlara — gösterilebilecek bir kanıt niteliği de taşıyabilir. Bu bölüm, bu yönün nasıl değerlendirilebileceğine dair **olasılıkları** belgeliyor; hiçbiri şu an için doğrulanmış bir anlaşma ya da garanti değildir.
+
+- **Greenpeace, WWF Türkiye gibi uluslararası/ulusal çevre STK'ları:** Bu tür kuruluşlar genellikle sahada gerçek, güncel ve ölçülebilir veri arayan yerel projelere destek/görünürlük sağlayabiliyor. Platformun elindeki "şu kadar doğrulanmış yuva kaydı, şu kadar aktif otel" gibi somut sayılar, bir fon başvurusunda veya ortaklık görüşmesinde iddiayı destekleyen bir kanıt olarak sunulabilir.
+- **Yerel çevre STK'ları ve üniversite biyoloji/ekoloji bölümleri:** Antalya/Muğla bölgesindeki yerel kuruluşlar, saha verisine erişim karşılığında görünürlük veya teknik destek sağlayabilir; bu daha küçük ölçekli ama kurulması muhtemelen daha kolay bir ortaklık türü.
+- **`GET /api/istatistikler` endpoint'inin rolü:** Bu endpoint tam olarak bu tür başvurularda kullanılmak üzere tasarlandı — kişisel veri içermeyen, toplu (toplam yuva kaydı, katkı sağlayan kullanıcı sayısı, aktif otel sayısı, ortalama uyum oranı) bir özet döndürüyor. Bir başvuru/sunum hazırlanırken bu sayılar doğrudan kullanılabilir veya zaman içindeki değişimi göstermek için periyodik olarak kaydedilip karşılaştırılabilir.
+- **Temkinli olunması gereken nokta:** Bu bölümdeki hiçbir kuruluşla şu an bir görüşme veya anlaşma yoktur; burada anlatılan yalnızca **verinin bu amaçla kullanılabilirliği** — asıl ortaklığın kurulup kurulamayacağı saha/iletişim çalışmasına bağlı, teknik platformun garanti edebileceği bir şey değil.
