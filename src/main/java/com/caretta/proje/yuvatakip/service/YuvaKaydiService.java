@@ -3,6 +3,7 @@ package com.caretta.proje.yuvatakip.service;
 import com.caretta.proje.auth.entity.User;
 import com.caretta.proje.yuvatakip.dto.YuvaKaydiRequest;
 import com.caretta.proje.yuvatakip.dto.YuvaKaydiResponse;
+import com.caretta.proje.yuvatakip.entity.Mevsim;
 import com.caretta.proje.yuvatakip.entity.YuvaKaydi;
 import com.caretta.proje.yuvatakip.repository.YuvaKaydiRepository;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +45,8 @@ public class YuvaKaydiService {
                 kayit.getTarih(),
                 kayit.getDurum(),
                 kayit.getNotlar(),
-                kayit.getCreatedAt()
+                kayit.getCreatedAt(),
+                Mevsim.hesapla(kayit.getTarih())
         );
     }
 }

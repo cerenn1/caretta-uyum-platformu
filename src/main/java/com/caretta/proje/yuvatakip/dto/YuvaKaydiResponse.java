@@ -1,5 +1,6 @@
 package com.caretta.proje.yuvatakip.dto;
 
+import com.caretta.proje.yuvatakip.entity.Mevsim;
 import com.caretta.proje.yuvatakip.entity.YuvaDurumu;
 
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ public record YuvaKaydiResponse(
         LocalDate tarih,
         YuvaDurumu durum,
         String notlar,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        Mevsim mevsim
 ) {
 }
