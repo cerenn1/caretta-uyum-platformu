@@ -62,6 +62,14 @@ const MAKS_FOTO_BAYT = 10 * 1024 * 1024;
 const DURUM_ETIKET = { AKTIF: "Aktif", CIKIS_YAPTI: "Çıkış Yaptı", RISK_ALTINDA: "Risk Altında" };
 const DURUM_RENK = { AKTIF: "#2e7d32", CIKIS_YAPTI: "#1565c0", RISK_ALTINDA: "#c62828" };
 
+// Backend'den gelen rozet degerleri (BRONZ/GUMUS/ALTIN) icin gosterim metni ve CSS sinifi.
+// Esikler backend'de (Rozet.hesapla) sabit: Bronz 5, Gumus 20, Altin 50 yuva kaydi.
+const ROZET_ETIKET = {
+  BRONZ: { etiket: "🥉 Bronz Rozet", sinif: "bronz" },
+  GUMUS: { etiket: "🥈 Gümüş Rozet", sinif: "gumus" },
+  ALTIN: { etiket: "🥇 Altın Rozet", sinif: "altin" },
+};
+
 // Uyum orani esikleri mobil uygulama ve PDF raporla AYNI: >=90 yuksek, 70-90 orta, <70 dusuk.
 function esikSinifi(oran) {
   if (oran >= 90) return "yuksek";
@@ -242,6 +250,21 @@ function panelHtmlUret(veri) {
       <p class="panel-satir"><span class="panel-etiket">E-posta</span><span class="panel-deger">${kacisliMetin(veri.email)}</span></p>
       <p class="panel-satir"><span class="panel-etiket">Rol</span><span class="panel-deger">${rolEtiket}</span></p>
       ${otelCalisani ? `<p class="panel-satir"><span class="panel-etiket">Otel</span><span class="panel-deger">${kacisliMetin(veri.otelAdi)}</span></p>` : ""}
+    </article>
+  `;
+
+  // Puan ve rozet karti - TUM roller icin uretilir (otel calisani/kullanici farki yok,
+  // herkes yuva kaydi ekleyip puan kazanabilir). Rozet backend'de toplam kayit sayisindan
+  // anlik hesaplaniyor (bkz. PanelOzetiService), burada sadece gosterimi yapiliyor.
+  const toplamPuan = Number(veri.toplamPuan) || 0;
+  const rozetBilgi = ROZET_ETIKET[veri.rozet];
+  html += `
+    <article class="panel-kart puan-kart">
+      <h3 class="panel-kart-baslik">Puan ve Rozet</h3>
+      <p class="panel-sayi">${toplamPuan} <span class="puan-birim">puan</span></p>
+      ${rozetBilgi
+        ? `<span class="rozet rozet-${rozetBilgi.sinif}">${rozetBilgi.etiket}</span>`
+        : `<p class="panel-detay">Henüz rozet yok · Bronz rozete ${Math.max(0, 5 - Number(veri.yuvaKayitToplam || 0))} kayıt kaldı</p>`}
     </article>
   `;
 

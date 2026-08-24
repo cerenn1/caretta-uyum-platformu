@@ -766,6 +766,11 @@ main { margin-top: -3.5rem; margin-bottom: var(--bosluk-7); }
   background: linear-gradient(165deg, #ffffff 0%, var(--adacayi-acik) 190%);
   border-color: #c3d6c2;
 }
+.puan-kart {                                      /* Puan ve rozet - sicak kumsal tonu */
+  background: linear-gradient(165deg, #ffffff 0%, var(--kum) 190%);
+  border-color: var(--kum-koyu);
+}
+.puan-birim { font-size: var(--yazi-sm); font-weight: 500; color: var(--metin-soluk); }
 
 .panel-sayi { color: var(--deniz); font-size: var(--yazi-3xl); line-height: 1.05; }
 .panel-etiket { color: var(--metin-soluk); }
@@ -783,6 +788,11 @@ main { margin-top: -3.5rem; margin-bottom: var(--bosluk-7); }
 }
 .rozet-basarili { background: var(--adacayi); color: var(--beyaz); }
 .rozet-uyari    { background: var(--mercan); color: #4a2018; }
+
+/* Rozet seviyeleri (bkz. ROZET_ETIKET script.js) - bronz/gumus/altin, madalya renklerine yakin */
+.rozet-bronz { background: #cd7f32; color: var(--beyaz); }
+.rozet-gumus { background: #9aa5ad; color: var(--beyaz); }
+.rozet-altin { background: #d4a72c; color: var(--beyaz); }
 
 /* ---- Butonlar ---- */
 .btn { border-radius: var(--radius-tam); font-size: var(--yazi-base); }
