@@ -70,6 +70,12 @@ const ROZET_ETIKET = {
   ALTIN: { etiket: "🥇 Altın Rozet", sinif: "altin" },
 };
 
+// Backend'de tarihten hesaplanan mevsim alani (Mevsim.java, Mayis-Eylul = yuvalama sezonu).
+const MEVSIM_ETIKET = {
+  YUVALAMA_SEZONU: { etiket: "🐢 Yuvalama Sezonu", sinif: "sezonda" },
+  SEZON_DISI: { etiket: "Sezon Dışı", sinif: "sezon-disi" },
+};
+
 // Uyum orani esikleri mobil uygulama ve PDF raporla AYNI: >=90 yuksek, 70-90 orta, <70 dusuk.
 function esikSinifi(oran) {
   if (oran >= 90) return "yuksek";
@@ -198,12 +204,14 @@ async function loadYuvaKayitlari() {
 
 function renderYuvaCard(kayit) {
   const durumEtiket = DURUM_ETIKET[kayit.durum] || kacisliMetin(kayit.durum);
+  const mevsimEtiket = MEVSIM_ETIKET[kayit.mevsim];
   return `
     <div class="yuva-card durum-${kayit.durum.toLowerCase()}">
       <div class="yuva-card-header">
         <span class="durum-badge">${durumEtiket}</span>
         <span class="tarih">${kacisliMetin(kayit.tarih)}</span>
       </div>
+      ${mevsimEtiket ? `<span class="mevsim-badge mevsim-${mevsimEtiket.sinif}">${mevsimEtiket.etiket}</span>` : ""}
       <p class="konum">📍 ${kayit.latitude}, ${kayit.longitude}</p>
       ${kayit.notlar ? `<p class="not">${kacisliMetin(kayit.notlar)}</p>` : ""}
     </div>
