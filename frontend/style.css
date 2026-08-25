@@ -145,8 +145,8 @@ body {
   color: #888;
 }
 .puan-detay-basamak.kazanildi { color: #222; font-weight: 600; }
-.puan-detay-basamak-odul { text-align: right; }
 .puan-detay-aciklama { font-size: 0.85rem; color: #666; margin-top: 14px; line-height: 1.5; }
+.puan-detay-sertifika-btn { width: 100%; margin-top: 16px; }
 
 .btn {
   border: none;

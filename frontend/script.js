@@ -67,14 +67,15 @@ const DURUM_ETIKET = { AKTIF: "Aktif", CIKIS_YAPTI: "Çıkış Yaptı", RISK_ALT
 const DURUM_RENK = { AKTIF: "#2e7d32", CIKIS_YAPTI: "#1565c0", RISK_ALTINDA: "#c62828" };
 
 // Backend'den gelen rozet degerleri (BRONZ/GUMUS/ALTIN) icin gosterim metni ve CSS sinifi.
-// esik/odul alanlari SADECE referans/tanitim listesi (puanDetayHtmlUret'teki "Rozet
-// Basamaklari") icin - kullanicinin GERCEK kazandigi/siradaki odul metni her zaman
-// backend'den (mevcutRozetOdulu/sonrakiRozetOdulu) gelir, burasi degil. Backend'deki
-// Rozet.java'da (esik/odul) degisirse burasi da GUNCELLENMELI.
+// esik alani SADECE referans listesi (puanDetayHtmlUret'teki "Rozet Basamaklari") icin -
+// Backend'deki Rozet.java'da esik degisirse burasi da GUNCELLENMELI. Odul TURU (partner
+// otel indirimi mi, dogrudan maddi odul mu) HENUZ KARARA BAGLANMADI - bu yuzden burada
+// (ya da baska hicbir yerde) spesifik bir odul metni YOK, sadece backend'den gelen genel
+// odulMesaji gosterilir (bkz. puanDetayHtmlUret).
 const ROZET_ETIKET = {
-  BRONZ: { etiket: "🥉 Bronz Rozet", sinif: "bronz", esik: 5, odul: "Partner otelde %5 indirim kodu" },
-  GUMUS: { etiket: "🥈 Gümüş Rozet", sinif: "gumus", esik: 20, odul: "Partner otelde %10 indirim kodu" },
-  ALTIN: { etiket: "🥇 Altın Rozet", sinif: "altin", esik: 50, odul: "Partner otelde ücretsiz bir gecelik konaklama" },
+  BRONZ: { etiket: "🥉 Bronz Rozet", sinif: "bronz", esik: 5 },
+  GUMUS: { etiket: "🥈 Gümüş Rozet", sinif: "gumus", esik: 20 },
+  ALTIN: { etiket: "🥇 Altın Rozet", sinif: "altin", esik: 50 },
 };
 
 // Backend'de tarihten hesaplanan mevsim alani (Mevsim.java, Mayis-Eylul = yuvalama sezonu).
@@ -345,8 +346,45 @@ async function puanDetayiniAc() {
   try {
     const veri = await apiRequest("/api/puan-detay");
     els.puanDetayIcerik.innerHTML = puanDetayHtmlUret(veri);
+
+    const sertifikaBtn = document.getElementById("katki-sertifikasi-btn");
+    if (sertifikaBtn) sertifikaBtn.addEventListener("click", indirKatkiSertifikasi);
   } catch (err) {
     els.puanDetayIcerik.innerHTML = `<p class="form-message error">${kacisliMetin(err.message)}</p>`;
+  }
+}
+
+// fetch ile indirilir cunku Authorization basligi gerekiyor (bkz. indirUyumRaporu,
+// ayni desen) - duz bir <a href> linki token gonderemez.
+async function indirKatkiSertifikasi() {
+  const btn = document.getElementById("katki-sertifikasi-btn");
+  if (btn) btn.disabled = true;
+  setMessage("sertifika", "Sertifika hazırlanıyor…", false);
+
+  try {
+    const response = await fetch(`${API_BASE}/api/katki-sertifikasi`, {
+      headers: { Authorization: `Bearer ${state.token}` },
+    });
+
+    if (!response.ok) {
+      const hata = await response.json().catch(() => null);
+      throw new Error(hata && hata.message ? hata.message : "Sertifika indirilemedi");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "katki-sertifikasi.pdf";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    setMessage("sertifika", "Sertifika indirildi.", false);
+  } catch (err) {
+    setMessage("sertifika", err.message, true);
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 
@@ -374,17 +412,6 @@ function puanDetayHtmlUret(veri) {
         <span>${sonrakiRozetBilgi.etiket} için ${veri.sonrakiRozeteKalanKayit} kayıt daha kaldı</span>
       </div>
     `;
-    // sonrakiRozetOdulu backend'den geliyor (kullaniciya OZEL, hangi rozete ne kadar
-    // kaldigina gore degisir) - rozet HENUZ yokken bile kullanici NEYE calistigini
-    // gorsun diye her zaman gosterilir.
-    if (veri.sonrakiRozetOdulu) {
-      html += `
-        <div class="puan-detay-satir">
-          <span class="puan-detay-etiket">Sıradaki Ödül</span>
-          <span>${kacisliMetin(veri.sonrakiRozetOdulu)}</span>
-        </div>
-      `;
-    }
   } else {
     html += `
       <div class="puan-detay-satir">
@@ -394,18 +421,22 @@ function puanDetayHtmlUret(veri) {
     `;
   }
 
-  if (veri.mevcutRozetOdulu) {
+  // odulMesaji backend'de rol/rozet seviyesi FARKETMEKSIZIN ayni, genel/spesifik-olmayan
+  // metin - odul TURU (partner otel indirimi mi, dogrudan maddi odul mu) henuz karara
+  // baglanmadigi icin burada (ya da baska hicbir yerde) yuzde/tutar gibi somut bir
+  // vaat GOSTERILMEZ.
+  if (veri.odulMesaji) {
     html += `
       <div class="puan-detay-odul-kutu">
-        <strong>🎁 Ödülün: ${kacisliMetin(veri.mevcutRozetOdulu)}</strong><br>
-        ${kacisliMetin(veri.odulTeslimBilgisi || "")}
+        🎁 ${kacisliMetin(veri.odulMesaji)}
       </div>
     `;
   }
 
-  // Rozet basamakları - kullanıcının ilerlemesinden BAĞIMSIZ, tüm ödül sistemini
-  // baştan gösteren sabit bir referans listesi (hiç rozeti olmayan biri de sistemin
-  // tamamını görebilsin diye).
+  // Rozet basamakları - kullanıcının ilerlemesinden BAĞIMSIZ, tüm seviyeleri ve
+  // eşiklerini baştan gösteren sabit bir referans listesi. Odul metni YOK (yukarida
+  // aciklandigi gibi henuz belirlenmedi), sadece hangi seviyenin kac kayit gerektirdigi
+  // ve kazanilip kazanilmadigi gosterilir.
   html += `<div class="puan-detay-basamaklar">`;
   ["BRONZ", "GUMUS", "ALTIN"].forEach((kod) => {
     const bilgi = ROZET_ETIKET[kod];
@@ -413,7 +444,6 @@ function puanDetayHtmlUret(veri) {
     html += `
       <div class="puan-detay-basamak ${kazanildiMi ? "kazanildi" : ""}">
         <span>${kazanildiMi ? "✓" : "•"} ${bilgi.etiket} (${bilgi.esik} kayıt)</span>
-        <span class="puan-detay-basamak-odul">${bilgi.odul}</span>
       </div>
     `;
   });
@@ -426,6 +456,10 @@ function puanDetayHtmlUret(veri) {
       için günlük kapanış kanıtı fotoğrafı yüklemek <strong>+5 puan</strong> kazandırır.
       Rozetler toplam yuva kaydı sayına göre otomatik verilir: Bronz 5, Gümüş 20, Altın 50 kayıt.
     </p>
+    <button type="button" id="katki-sertifikasi-btn" class="btn btn-outline-dark puan-detay-sertifika-btn">
+      📄 Katkı Sertifikamı İndir (PDF)
+    </button>
+    <p class="form-message" data-for="sertifika"></p>
   `;
 
   return html;
