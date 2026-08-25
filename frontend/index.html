@@ -30,6 +30,19 @@
   </header>
 
   <main>
+    <!-- Etkimiz / Kapsam Alanimiz: HERKESE ACIK (giris gerekmez), kisisel veri
+         icermez. GET /api/kapsam-alani ile doldurulur - uc AYRI veri kumesi
+         (resmi kumsal listesi / mavi bayrak / platformun kendi verisi) BILINCLI
+         olarak ayri kutularda ve ayri etiketlerle gosterilir, birbirine
+         KARISTIRILMAZ. -->
+    <section id="etki-alani-section" class="card-section">
+      <div class="dashboard-header">
+        <h2>Etkimiz / Kapsam Alanımız</h2>
+      </div>
+      <div id="etki-alani-yukleniyor" class="panel-durum">Yükleniyor…</div>
+      <div id="etki-alani-icerik" class="hidden"></div>
+    </section>
+
     <section id="auth-section" class="card-section">
       <div class="tabs">
         <button class="tab-btn active" data-tab="register" type="button">Kayıt Ol</button>

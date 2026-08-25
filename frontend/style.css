@@ -992,3 +992,62 @@ main {
   word-break: break-word;
   max-width: 100%;
 }
+
+/* ===========================================================================
+   ETKI ALANI / KAPSAM ALANIMIZ - herkese acik bolum. Uc kutu (resmi kumsal /
+   mavi bayrak / platform verisi) BILINCLI olarak farkli tonlarda, ayri kutular
+   halinde - birbirine karistirilmamasi gorsel olarak da vurgulanir.
+   =========================================================================== */
+#etki-alani-section .dashboard-header { margin-bottom: var(--bosluk-4); }
+
+.etki-kutu {
+  border-radius: var(--radius);
+  box-shadow: var(--golge-yumusak);
+  border: 1px solid var(--kum-cizgi);
+  padding: var(--bosluk-4);
+  margin-bottom: var(--bosluk-4);
+  background: linear-gradient(165deg, #ffffff 0%, var(--kum-acik) 190%);
+}
+.etki-kutu-mavi { background: linear-gradient(165deg, #ffffff 0%, var(--gok-mavi) 190%); border-color: var(--gok-mavi-koyu); }
+.etki-kutu-platform { background: linear-gradient(165deg, #ffffff 0%, var(--adacayi-acik) 190%); border-color: #c3d6c2; margin-bottom: 0; }
+
+.etki-kutu-baslik { font-size: var(--yazi-lg); margin: 0 0 var(--bosluk-2); color: var(--deniz); }
+.etki-alt-baslik { font-size: var(--yazi-base); margin: var(--bosluk-3) 0 var(--bosluk-1); color: var(--lacivert); }
+
+.etki-ayrim-notu { font-size: var(--yazi-sm); color: var(--metin-soluk); margin: 0 0 var(--bosluk-2); }
+.etki-ayrim-notu-kucuk { font-size: var(--yazi-xs); color: var(--metin-soluk); margin: 0 0 var(--bosluk-2); }
+.etki-kaynak-notu { font-size: var(--yazi-xs); color: var(--metin-soluk); margin-top: var(--bosluk-3); font-style: italic; }
+
+.etki-il-listesi { display: flex; flex-direction: column; gap: 6px; }
+.etki-il-grubu { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
+.etki-il-adi { font-weight: 700; color: var(--deniz); min-width: 80px; }
+.etki-kumsal-listesi { color: var(--metin); font-size: var(--yazi-sm); }
+
+.etki-mavi-bayrak-listesi { display: flex; flex-wrap: wrap; gap: var(--bosluk-3); }
+.etki-mavi-bayrak-satir {
+  background: #fff;
+  border: 1px solid var(--gok-mavi-koyu);
+  border-radius: var(--radius-tam);
+  padding: 4px 14px;
+  font-size: var(--yazi-sm);
+  color: var(--lacivert);
+}
+
+.etki-platform-sayilar { display: flex; gap: var(--bosluk-5); flex-wrap: wrap; margin-bottom: var(--bosluk-3); }
+.etki-platform-sayilar > div { display: flex; flex-direction: column; }
+.etki-platform-buyuk { font-size: var(--yazi-3xl); font-weight: 700; color: var(--deniz); line-height: 1.1; }
+
+.etki-bolge-listesi { display: flex; flex-direction: column; gap: 4px; }
+.etki-bolge-satir {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--yazi-sm);
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--kum-cizgi);
+}
+.etki-bolge-sayi { font-weight: 700; color: var(--deniz); }
+
+@media (max-width: 600px) {
+  .etki-il-grubu { flex-direction: column; gap: 2px; }
+  .etki-platform-sayilar { gap: var(--bosluk-3); }
+}

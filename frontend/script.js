@@ -46,6 +46,8 @@ const els = {
   puanDetayModal: document.getElementById("puan-detay-modal"),
   puanDetayIcerik: document.getElementById("puan-detay-icerik"),
   puanDetayKapatBtn: document.getElementById("puan-detay-kapat-btn"),
+  etkiAlaniYukleniyor: document.getElementById("etki-alani-yukleniyor"),
+  etkiAlaniIcerik: document.getElementById("etki-alani-icerik"),
 };
 
 // Kullanicidan gelen metni (ornegin yuva notu) HTML'e gomerken kacis yapar.
@@ -226,6 +228,80 @@ function renderYuvaCard(kayit) {
       ${mevsimEtiket ? `<span class="mevsim-badge mevsim-${mevsimEtiket.sinif}">${mevsimEtiket.etiket}</span>` : ""}
       <p class="konum">📍 ${kayit.latitude}, ${kayit.longitude}</p>
       ${kayit.notlar ? `<p class="not">${kacisliMetin(kayit.notlar)}</p>` : ""}
+    </div>
+  `;
+}
+
+// ---------------------------------------------------------------------------
+// ETKI ALANI / KAPSAM ALANIMIZ - herkese acik (giris GEREKMEZ), kisisel veri
+// icermez. GET /api/kapsam-alani UC AYRI veri kumesi donuyor - BILINCLI olarak
+// ayri kutularda/etiketlerle gosteriliyor, birbirine KARISTIRILMIYOR:
+//   1) Resmi korumali kumsal listesi (Tarim ve Orman/Cevre Bakanligi kaynakli)
+//   2) Mavi Bayrak sayilari (FEE 2026, AYRI bir sertifika - kumsal listesiyle
+//      karistirilmamasi gerektigi acikca belirtilir)
+//   3) Platformun KENDI canli verisi (toplam kayit/otel + otomatik bolge
+//      gruplama - resmi listeden BAGIMSIZ, veritabanindan hesaplanir)
+// ---------------------------------------------------------------------------
+async function loadKapsamAlani() {
+  try {
+    const veri = await apiRequest("/api/kapsam-alani");
+    els.etkiAlaniIcerik.innerHTML = kapsamAlaniHtmlUret(veri);
+    els.etkiAlaniYukleniyor.classList.add("hidden");
+    els.etkiAlaniIcerik.classList.remove("hidden");
+  } catch (err) {
+    els.etkiAlaniYukleniyor.textContent = "Kapsam alanı bilgisi şu an yüklenemedi.";
+  }
+}
+
+function kapsamAlaniHtmlUret(veri) {
+  const kumsalHtml = veri.resmiKorumaAltindakiKumsallar
+    .map(
+      (grup) => `
+        <div class="etki-il-grubu">
+          <span class="etki-il-adi">${kacisliMetin(grup.il)}</span>
+          <span class="etki-kumsal-listesi">${grup.kumsallar.map(kacisliMetin).join(", ")}</span>
+        </div>`
+    )
+    .join("");
+
+  const maviBayrakHtml = Object.entries(veri.maviBayrakSayilari)
+    .map(([il, sayi]) => `<span class="etki-mavi-bayrak-satir">${kacisliMetin(il)}: <strong>${sayi}</strong> plaj</span>`)
+    .join("");
+
+  const bolgeHtml = veri.platformKayitBolgeleri
+    .map(
+      (b) => `
+        <div class="etki-bolge-satir">
+          <span>${kacisliMetin(b.bolgeAdi)}${b.il ? ` (${kacisliMetin(b.il)})` : ""}</span>
+          <span class="etki-bolge-sayi">${b.kayitSayisi}</span>
+        </div>`
+    )
+    .join("");
+
+  return `
+    <div class="etki-kutu">
+      <h3 class="etki-kutu-baslik">🏖️ Resmi Korumalı Yuvalama Kumsalları</h3>
+      <div class="etki-il-listesi">${kumsalHtml}</div>
+      <p class="etki-kaynak-notu">Kaynak: ${kacisliMetin(veri.resmiVeriKaynagi)}</p>
+    </div>
+
+    <div class="etki-kutu etki-kutu-mavi">
+      <h3 class="etki-kutu-baslik">🚩 ${veri.maviBayrakYili} Mavi Bayrak Sayıları</h3>
+      <p class="etki-ayrim-notu">Bu, yukarıdaki yuvalama kumsalı listesinden <strong>ayrı ve farklı bir sertifikadır</strong> — karıştırılmamalıdır.</p>
+      <div class="etki-mavi-bayrak-listesi">${maviBayrakHtml}</div>
+      <p class="etki-kaynak-notu">Kaynak: ${kacisliMetin(veri.maviBayrakKaynagi)}</p>
+    </div>
+
+    <div class="etki-kutu etki-kutu-platform">
+      <h3 class="etki-kutu-baslik">📊 Platformun Kendi Verisi</h3>
+      <p class="etki-ayrim-notu">Bu bölüm resmi ulusal veri DEĞİL — platforma girilen gerçek kayıtlardan anlık hesaplanır.</p>
+      <div class="etki-platform-sayilar">
+        <div><span class="etki-platform-buyuk">${veri.platformToplamYuvaKaydiSayisi}</span><span>toplam yuva/gözlem kaydı</span></div>
+        <div><span class="etki-platform-buyuk">${veri.platformAktifOtelSayisi}</span><span>aktif otel</span></div>
+      </div>
+      <h4 class="etki-alt-baslik">Kayıtlarımızın Bulunduğu Bölgeler</h4>
+      <p class="etki-ayrim-notu-kucuk">Bölgeler, kayıtlı konumlara göre otomatik gruplanır (elle girilmez).</p>
+      <div class="etki-bolge-listesi">${bolgeHtml}</div>
     </div>
   `;
 }
@@ -910,6 +986,7 @@ els.raporIndirBtn.addEventListener("click", indirUyumRaporu);
 els.panelTekrarBtn.addEventListener("click", loadPanelOzeti);
 
 updateAuthUI();
+loadKapsamAlani(); // herkese acik, giris durumundan BAGIMSIZ her zaman yuklenir
 if (state.token) {
   loadPanelOzeti();
   loadYuvaKayitlari();
