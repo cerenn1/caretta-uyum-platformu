@@ -135,6 +135,17 @@ body {
   border: 1px solid #f0dca0;
   font-size: 0.9rem;
 }
+.puan-detay-basamaklar { margin-top: 16px; border-top: 1px solid #eee; padding-top: 12px; }
+.puan-detay-basamak {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.85rem;
+  padding: 5px 0;
+  color: #888;
+}
+.puan-detay-basamak.kazanildi { color: #222; font-weight: 600; }
+.puan-detay-basamak-odul { text-align: right; }
 .puan-detay-aciklama { font-size: 0.85rem; color: #666; margin-top: 14px; line-height: 1.5; }
 
 .btn {

@@ -67,11 +67,14 @@ const DURUM_ETIKET = { AKTIF: "Aktif", CIKIS_YAPTI: "Çıkış Yaptı", RISK_ALT
 const DURUM_RENK = { AKTIF: "#2e7d32", CIKIS_YAPTI: "#1565c0", RISK_ALTINDA: "#c62828" };
 
 // Backend'den gelen rozet degerleri (BRONZ/GUMUS/ALTIN) icin gosterim metni ve CSS sinifi.
-// Esikler backend'de (Rozet.hesapla) sabit: Bronz 5, Gumus 20, Altin 50 yuva kaydi.
+// esik/odul alanlari SADECE referans/tanitim listesi (puanDetayHtmlUret'teki "Rozet
+// Basamaklari") icin - kullanicinin GERCEK kazandigi/siradaki odul metni her zaman
+// backend'den (mevcutRozetOdulu/sonrakiRozetOdulu) gelir, burasi degil. Backend'deki
+// Rozet.java'da (esik/odul) degisirse burasi da GUNCELLENMELI.
 const ROZET_ETIKET = {
-  BRONZ: { etiket: "🥉 Bronz Rozet", sinif: "bronz" },
-  GUMUS: { etiket: "🥈 Gümüş Rozet", sinif: "gumus" },
-  ALTIN: { etiket: "🥇 Altın Rozet", sinif: "altin" },
+  BRONZ: { etiket: "🥉 Bronz Rozet", sinif: "bronz", esik: 5, odul: "Partner otelde %5 indirim kodu" },
+  GUMUS: { etiket: "🥈 Gümüş Rozet", sinif: "gumus", esik: 20, odul: "Partner otelde %10 indirim kodu" },
+  ALTIN: { etiket: "🥇 Altın Rozet", sinif: "altin", esik: 50, odul: "Partner otelde ücretsiz bir gecelik konaklama" },
 };
 
 // Backend'de tarihten hesaplanan mevsim alani (Mevsim.java, Mayis-Eylul = yuvalama sezonu).
@@ -371,6 +374,17 @@ function puanDetayHtmlUret(veri) {
         <span>${sonrakiRozetBilgi.etiket} için ${veri.sonrakiRozeteKalanKayit} kayıt daha kaldı</span>
       </div>
     `;
+    // sonrakiRozetOdulu backend'den geliyor (kullaniciya OZEL, hangi rozete ne kadar
+    // kaldigina gore degisir) - rozet HENUZ yokken bile kullanici NEYE calistigini
+    // gorsun diye her zaman gosterilir.
+    if (veri.sonrakiRozetOdulu) {
+      html += `
+        <div class="puan-detay-satir">
+          <span class="puan-detay-etiket">Sıradaki Ödül</span>
+          <span>${kacisliMetin(veri.sonrakiRozetOdulu)}</span>
+        </div>
+      `;
+    }
   } else {
     html += `
       <div class="puan-detay-satir">
@@ -388,6 +402,22 @@ function puanDetayHtmlUret(veri) {
       </div>
     `;
   }
+
+  // Rozet basamakları - kullanıcının ilerlemesinden BAĞIMSIZ, tüm ödül sistemini
+  // baştan gösteren sabit bir referans listesi (hiç rozeti olmayan biri de sistemin
+  // tamamını görebilsin diye).
+  html += `<div class="puan-detay-basamaklar">`;
+  ["BRONZ", "GUMUS", "ALTIN"].forEach((kod) => {
+    const bilgi = ROZET_ETIKET[kod];
+    const kazanildiMi = veri.rozet && ["BRONZ", "GUMUS", "ALTIN"].indexOf(veri.rozet) >= ["BRONZ", "GUMUS", "ALTIN"].indexOf(kod);
+    html += `
+      <div class="puan-detay-basamak ${kazanildiMi ? "kazanildi" : ""}">
+        <span>${kazanildiMi ? "✓" : "•"} ${bilgi.etiket} (${bilgi.esik} kayıt)</span>
+        <span class="puan-detay-basamak-odul">${bilgi.odul}</span>
+      </div>
+    `;
+  });
+  html += `</div>`;
 
   html += `
     <p class="puan-detay-aciklama">
