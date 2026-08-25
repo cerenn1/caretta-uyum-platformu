@@ -56,13 +56,9 @@ class RozetTest {
     }
 
     @Test
-    void esikVeOduAlanlariDogruDoner() {
+    void esikAlanlariDogruDoner() {
         assertThat(Rozet.BRONZ.getEsikYuvaKayitSayisi()).isEqualTo(5);
         assertThat(Rozet.GUMUS.getEsikYuvaKayitSayisi()).isEqualTo(20);
         assertThat(Rozet.ALTIN.getEsikYuvaKayitSayisi()).isEqualTo(50);
-
-        assertThat(Rozet.BRONZ.getOduAciklamasi()).isEqualTo("Partner otelde %5 indirim kodu");
-        assertThat(Rozet.GUMUS.getOduAciklamasi()).isEqualTo("Partner otelde %10 indirim kodu");
-        assertThat(Rozet.ALTIN.getOduAciklamasi()).isEqualTo("Partner otelde ücretsiz bir gecelik konaklama");
     }
 }

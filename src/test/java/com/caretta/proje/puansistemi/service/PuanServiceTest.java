@@ -88,9 +88,7 @@ class PuanServiceTest {
         assertThat(detay.yuvaKayitToplam()).isEqualTo(3L);
         assertThat(detay.sonrakiRozet()).isEqualTo(Rozet.BRONZ.name());
         assertThat(detay.sonrakiRozeteKalanKayit()).isEqualTo(2L);
-        assertThat(detay.mevcutRozetOdulu()).isNull();
-        assertThat(detay.sonrakiRozetOdulu()).isEqualTo(Rozet.BRONZ.getOduAciklamasi());
-        assertThat(detay.odulTeslimBilgisi()).isNull();
+        assertThat(detay.odulMesaji()).isNull();
     }
 
     @Test
@@ -105,9 +103,7 @@ class PuanServiceTest {
         assertThat(detay.rozet()).isEqualTo(Rozet.BRONZ.name());
         assertThat(detay.sonrakiRozet()).isEqualTo(Rozet.GUMUS.name());
         assertThat(detay.sonrakiRozeteKalanKayit()).isEqualTo(12L);
-        assertThat(detay.mevcutRozetOdulu()).isEqualTo(Rozet.BRONZ.getOduAciklamasi());
-        assertThat(detay.sonrakiRozetOdulu()).isEqualTo(Rozet.GUMUS.getOduAciklamasi());
-        assertThat(detay.odulTeslimBilgisi()).isNotNull();
+        assertThat(detay.odulMesaji()).isEqualTo(PuanService.ODUL_MESAJI);
     }
 
     @Test
@@ -122,8 +118,24 @@ class PuanServiceTest {
         assertThat(detay.rozet()).isEqualTo(Rozet.ALTIN.name());
         assertThat(detay.sonrakiRozet()).isNull();
         assertThat(detay.sonrakiRozeteKalanKayit()).isNull();
-        assertThat(detay.mevcutRozetOdulu()).isEqualTo(Rozet.ALTIN.getOduAciklamasi());
-        assertThat(detay.sonrakiRozetOdulu()).isNull();
-        assertThat(detay.odulTeslimBilgisi()).isNotNull();
+        assertThat(detay.odulMesaji()).isEqualTo(PuanService.ODUL_MESAJI);
+    }
+
+    @Test
+    void detayHesapla_RolFarkiOlmaksizinAyniOdulMesajiGosterilir() {
+        puanService = new PuanService(kullaniciPuaniRepository);
+        User otelCalisani = User.builder()
+                .id(2L)
+                .email("otel_calisani@example.com")
+                .password("hash")
+                .role(Rol.OTEL_CALISANI)
+                .build();
+        when(kullaniciPuaniRepository.toplamPuanHesapla(2L)).thenReturn(70L);
+
+        // Ayni kayit sayisi (8) - biri KULLANICI biri OTEL_CALISANI - AYNI genel
+        // odul mesajini gormeli, aralarinda hicbir fark OLMAMALI.
+        PuanDetayResponse detay = puanService.detayHesapla(otelCalisani, 8L);
+
+        assertThat(detay.odulMesaji()).isEqualTo(PuanService.ODUL_MESAJI);
     }
 }

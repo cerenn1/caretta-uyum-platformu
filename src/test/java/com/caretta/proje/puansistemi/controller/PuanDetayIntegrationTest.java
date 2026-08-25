@@ -85,9 +85,7 @@ class PuanDetayIntegrationTest {
                 .andExpect(jsonPath("$.yuvaKayitToplam").value(0))
                 .andExpect(jsonPath("$.sonrakiRozet").value("BRONZ"))
                 .andExpect(jsonPath("$.sonrakiRozeteKalanKayit").value(5))
-                .andExpect(jsonPath("$.mevcutRozetOdulu").doesNotExist())
-                .andExpect(jsonPath("$.sonrakiRozetOdulu").value("Partner otelde %5 indirim kodu"))
-                .andExpect(jsonPath("$.odulTeslimBilgisi").doesNotExist());
+                .andExpect(jsonPath("$.odulMesaji").doesNotExist());
     }
 
     @Test
@@ -105,8 +103,6 @@ class PuanDetayIntegrationTest {
                 .andExpect(jsonPath("$.yuvaKayitToplam").value(5))
                 .andExpect(jsonPath("$.sonrakiRozet").value("GUMUS"))
                 .andExpect(jsonPath("$.sonrakiRozeteKalanKayit").value(15))
-                .andExpect(jsonPath("$.mevcutRozetOdulu").value("Partner otelde %5 indirim kodu"))
-                .andExpect(jsonPath("$.sonrakiRozetOdulu").value("Partner otelde %10 indirim kodu"))
-                .andExpect(jsonPath("$.odulTeslimBilgisi").isNotEmpty());
+                .andExpect(jsonPath("$.odulMesaji").isNotEmpty());
     }
 }

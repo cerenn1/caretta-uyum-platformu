@@ -3,29 +3,28 @@ package com.caretta.proje.puansistemi.entity;
 // Rozet HICBIR YERDE persist edilmez; kullanicinin toplam yuva kayit sayisindan
 // anlik olarak hesaplanir (bkz. PanelOzetiService). Ayri bir "rozetler" tablosu yoktur.
 //
-// oduAciklamasi alanlari TAMAMEN SEMBOLIK/BILGILENDIRME amaclidir - sistem gercek bir
-// indirim kodu URETMEZ, herhangi bir odeme/kupon entegrasyonu YOKTUR. Bu metin sadece
-// "kullanici bu odulu hak etti" bilgisini kullaniciya gostermek icindir; odulun fiili
-// teslimi (kod uretimi, indirim uygulamasi) bu sistemin disinda, manuel/is surecidir.
+// NOT (odul aciklamasi KASITLI OLARAK burada YOK): Onceden her seviyenin kendine
+// ozel, spesifik bir odul metni vardi (ornegin "Partner otelde %5 indirim kodu").
+// Bu kaldirildi cunku: (1) odul turu (partner otel indirimi mi, dogrudan maddi
+// odul mu) henuz bir is karari olarak netlesmedi ve (2) platformun su an gercek
+// bir partner otel anlasmasi YOK - "otel indirimi" vaadi hem otel calisanlarina
+// hem sistemi kullanan diger herkese (KULLANICI rolu dahil) karsiligi olmayan,
+// erken bir vaat olurdu. Genel/spesifik-olmayan odul mesaji artik PuanService
+// katmaninda uretiliyor (bkz. PuanService.detayHesapla), enum sadece esik
+// degerlerini ve seviye gecislerini bilir.
 public enum Rozet {
-    BRONZ(5, "Partner otelde %5 indirim kodu"),
-    GUMUS(20, "Partner otelde %10 indirim kodu"),
-    ALTIN(50, "Partner otelde ücretsiz bir gecelik konaklama");
+    BRONZ(5),
+    GUMUS(20),
+    ALTIN(50);
 
     private final long esikYuvaKayitSayisi;
-    private final String oduAciklamasi;
 
-    Rozet(long esikYuvaKayitSayisi, String oduAciklamasi) {
+    Rozet(long esikYuvaKayitSayisi) {
         this.esikYuvaKayitSayisi = esikYuvaKayitSayisi;
-        this.oduAciklamasi = oduAciklamasi;
     }
 
     public long getEsikYuvaKayitSayisi() {
         return esikYuvaKayitSayisi;
-    }
-
-    public String getOduAciklamasi() {
-        return oduAciklamasi;
     }
 
     // Esik degerleri artik enum'un kendi alaninda tutuluyor - burada hardcoded sayi YOK,

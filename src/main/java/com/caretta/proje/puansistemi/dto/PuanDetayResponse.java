@@ -10,8 +10,8 @@ public record PuanDetayResponse(
         long yuvaKayitToplam,
         String sonrakiRozet,              // null ise zaten ALTIN (en yuksek seviye)
         Long sonrakiRozeteKalanKayit,      // null ise zaten ALTIN
-        String mevcutRozetOdulu,          // null ise rozet yok
-        String sonrakiRozetOdulu,         // null ise zaten ALTIN
-        String odulTeslimBilgisi          // null ise rozet yok; doluysa nasil talep edilecegi
+        String odulMesaji                 // rozet null ise null; doluysa GENEL (rol/rozet
+                                           // seviyesi farketmeksizin ayni) - spesifik bir
+                                           // vaatte (yuzde, tutar, indirim turu) BULUNMAZ
 ) {
 }

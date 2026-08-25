@@ -18,6 +18,14 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PuanService {
 
+    // ODUL TURU (partner otel indirimi mi, dogrudan maddi odul mu) HENUZ KARARA
+    // BAGLANMADI - bu yuzden burada SPESIFIK bir sey (yuzde, tutar, indirim turu)
+    // VAAT EDILMEZ, net ama belirsiz genel bir mesaj gosterilir. Rol farki YOK -
+    // otel calisani da normal kullanici da AYNI mesaji gorur. Paket-private (test
+    // erisimi icin): bkz. PuanServiceTest.
+    static final String ODUL_MESAJI =
+            "Bu rozet seviyesinde bir ödül hak ettin! Detaylar için proje yöneticinle iletişime geç.";
+
     private final KullaniciPuaniRepository kullaniciPuaniRepository;
 
     public void puanEkle(User kullanici, int puan, String sebep) {
@@ -49,9 +57,7 @@ public class PuanService {
                 ? null
                 : Math.max(0, sonrakiRozet.getEsikYuvaKayitSayisi() - yuvaKayitToplam);
 
-        String odulTeslimBilgisi = mevcutRozet == null
-                ? null
-                : "Bu ödülü hak ettin! Bu ekranın görüntüsünü otel/proje yöneticinle paylaşarak talep edebilirsin.";
+        String odulMesaji = mevcutRozet == null ? null : ODUL_MESAJI;
 
         return new PuanDetayResponse(
                 toplamPuan,
@@ -59,9 +65,7 @@ public class PuanService {
                 yuvaKayitToplam,
                 sonrakiRozet == null ? null : sonrakiRozet.name(),
                 kalanKayit,
-                mevcutRozet == null ? null : mevcutRozet.getOduAciklamasi(),
-                sonrakiRozet == null ? null : sonrakiRozet.getOduAciklamasi(),
-                odulTeslimBilgisi
+                odulMesaji
         );
     }
 }
