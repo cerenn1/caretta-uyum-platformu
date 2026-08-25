@@ -1,5 +1,6 @@
 package com.caretta.proje.raporlama.service;
 
+import com.caretta.proje.common.PdfFontYukleyici;
 import com.caretta.proje.raporlama.dto.UyumRaporuVerisi;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
@@ -24,7 +25,6 @@ import org.springframework.stereotype.Service;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -102,8 +102,8 @@ public class UyumRaporuPdfOlusturucu {
     @PostConstruct
     void fontlariYukle() {
         try {
-            BaseFont normal = classpathTtfYukle("/fonts/DejaVuSans.ttf");
-            BaseFont kalin = classpathTtfYukle("/fonts/DejaVuSans-Bold.ttf");
+            BaseFont normal = PdfFontYukleyici.classpathTtfYukle("/fonts/DejaVuSans.ttf");
+            BaseFont kalin = PdfFontYukleyici.classpathTtfYukle("/fonts/DejaVuSans-Bold.ttf");
 
             baslikFontu = new Font(kalin, 16, Font.BOLD);
             altBaslikFontu = new Font(kalin, 12, Font.BOLD);
@@ -116,27 +116,6 @@ public class UyumRaporuPdfOlusturucu {
             takvimGunNotrFontu = new Font(normal, 8, Font.NORMAL, RENK_DONEM_DISI_YAZI);
         } catch (IOException | DocumentException e) {
             throw new IllegalStateException("Rapor fontlari yuklenemedi", e);
-        }
-    }
-
-    /**
-     * Turkce karakterler (s/g/i/I/c/o/u ve buyuk/kucuk halleri) PDF'in varsayilan
-     * fontlarinda bozuk gorunur. Bu yuzden fontu IDENTITY_H kodlamasi ve EMBEDDED=true
-     * ile, dosyanin kendi baytlarini PDF icine gomerek yukluyoruz - boylece rapor,
-     * hedef makinede DejaVuSans kurulu olmasa bile dogru gorunur.
-     *
-     * Font, classpath'ten (getResourceAsStream) byte dizisi olarak okunur; dosya
-     * yoluna guvenilmez, boylece uygulama jar icinde (Docker container'da) calisirken de
-     * calisir.
-     */
-    private BaseFont classpathTtfYukle(String classpathYolu) throws IOException, DocumentException {
-        try (InputStream in = getClass().getResourceAsStream(classpathYolu)) {
-            if (in == null) {
-                throw new IOException("Font dosyasi classpath'te bulunamadi: " + classpathYolu);
-            }
-            byte[] fontBaytlari = in.readAllBytes();
-            String dosyaAdi = classpathYolu.substring(classpathYolu.lastIndexOf('/') + 1);
-            return BaseFont.createFont(dosyaAdi, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, BaseFont.CACHED, fontBaytlari, null);
         }
     }
 

@@ -105,4 +105,31 @@ class PuanDetayIntegrationTest {
                 .andExpect(jsonPath("$.sonrakiRozeteKalanKayit").value(15))
                 .andExpect(jsonPath("$.odulMesaji").isNotEmpty());
     }
+
+    // --- GET /api/katki-sertifikasi ---
+
+    @Test
+    void katkiSertifikasi_TokensizIstek401Veya403Donmeli() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/katki-sertifikasi")).andReturn();
+
+        assertThat(result.getResponse().getStatus())
+                .as("token olmadan katki sertifikasi 401 ya da 403 donmeli")
+                .isIn(401, 403);
+    }
+
+    @Test
+    void katkiSertifikasi_TokenliIstek200VePdfIcerikTipiDoner() throws Exception {
+        String token = normalKullaniciKaydolVeTokenAl();
+
+        MvcResult result = mockMvc.perform(get("/api/katki-sertifikasi")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
+                        .contentType(MediaType.APPLICATION_PDF))
+                .andReturn();
+
+        byte[] pdf = result.getResponse().getContentAsByteArray();
+        assertThat(pdf).isNotEmpty();
+        assertThat(new String(pdf, 0, 4, java.nio.charset.StandardCharsets.US_ASCII)).isEqualTo("%PDF");
+    }
 }
