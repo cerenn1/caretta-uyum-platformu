@@ -25,4 +25,12 @@ public interface YuvaKaydiRepository extends JpaRepository<YuvaKaydi, Long> {
     // gercekten katki saglayanlari sayar.
     @Query("select count(distinct y.user.id) from YuvaKaydi y")
     long distinctKullaniciSayisi();
+
+    // "Etkimiz / Kapsam Alanimiz" bolumu icin: TUM yuva kayitlarinin konumlarini
+    // ceker. Bu konumlar HICBIR DIS SERVISE (reverse-geocoding vb.) GONDERILMEZ -
+    // sadece sunucu icinde, 21 resmi kumsalin sabit referans koordinatiyla
+    // Haversine karsilastirmasi yapmak icin kullanilir (bkz. KapsamAlaniService).
+    // Ham entity yerine sadece 2 alan cekilerek gereksiz veri transferinden kacinilir.
+    @Query("select y.latitude, y.longitude from YuvaKaydi y")
+    List<Object[]> tumKonumlariGetir();
 }

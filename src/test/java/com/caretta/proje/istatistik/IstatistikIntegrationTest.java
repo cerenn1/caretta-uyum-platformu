@@ -156,4 +156,34 @@ class IstatistikIntegrationTest {
         assertThat(json.get("aktifOtelSayisi").asLong()).isGreaterThanOrEqualTo(1L);
         assertThat(json.has("hesaplamaTarihi")).isTrue();
     }
+
+    @Test
+    void kapsamAlani_TokensizIstek200Doner() throws Exception {
+        mockMvc.perform(get("/api/kapsam-alani"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void kapsamAlani_21KumsalBesIlAltindaDogruGruplanir() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/kapsam-alani"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode json = objectMapper.readTree(result.getResponse().getContentAsString());
+        JsonNode ilGruplari = json.get("resmiKorumaAltindakiKumsallar");
+
+        assertThat(ilGruplari.size()).isEqualTo(5);
+
+        int toplamKumsalSayisi = 0;
+        for (JsonNode ilGrubu : ilGruplari) {
+            toplamKumsalSayisi += ilGrubu.get("kumsallar").size();
+        }
+        assertThat(toplamKumsalSayisi).isEqualTo(21);
+
+        assertThat(json.get("maviBayrakSayilari").get("Antalya").asInt()).isEqualTo(234);
+        assertThat(json.get("maviBayrakYili").asInt()).isEqualTo(2026);
+        assertThat(json.has("platformToplamYuvaKaydiSayisi")).isTrue();
+        assertThat(json.has("platformAktifOtelSayisi")).isTrue();
+        assertThat(json.has("platformKayitBolgeleri")).isTrue();
+    }
 }

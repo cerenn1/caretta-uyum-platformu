@@ -62,6 +62,9 @@ public class SecurityConfig {
                         // fon basvurusu/ortaklik gorusmelerinde disariya (Greenpeace, WWF vb.)
                         // gosterilebilmesi icin bilerek herkese acik birakildi.
                         .requestMatchers(HttpMethod.GET, "/api/istatistikler").permitAll()
+                        // Ayni gerekceyle (kisisel veri yok, "Etkimiz / Kapsam Alanimiz"
+                        // bolumunde disariya/fon kuruluslarina gosterilecek) bilerek permitAll.
+                        .requestMatchers(HttpMethod.GET, "/api/kapsam-alani").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
