@@ -1,5 +1,8 @@
 package com.caretta.proje.auth;
 
+import com.caretta.proje.otel.entity.Otel;
+import com.caretta.proje.otel.repository.OtelRepository;
+import com.caretta.proje.uyelik.entity.UyelikDurumu;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -41,8 +44,39 @@ class AuthFlowIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private OtelRepository otelRepository;
+
     private String uniqueEmail(String prefix) {
         return prefix + "_" + UUID.randomUUID() + "@example.com";
+    }
+
+    private String rastgeleTestDavetKodu() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+    }
+
+    private Otel otelOlustur(int satinAlinanKoltukSayisi) {
+        return otelRepository.save(Otel.builder()
+                .ad("Yonetici Testi Otel " + UUID.randomUUID())
+                .latitude(36.85)
+                .longitude(30.7)
+                .davetKodu(rastgeleTestDavetKodu())
+                .satinAlinanKoltukSayisi(satinAlinanKoltukSayisi)
+                .uyelikDurumu(UyelikDurumu.DENEME)
+                .manuelPremiumMu(false)
+                .build());
+    }
+
+    private MvcResult kaydolIste(String rol, Otel otel) throws Exception {
+        String email = uniqueEmail("koltuk");
+        String body = """
+                {"email":"%s","password":"password123","role":"%s","otelId":%d,"otelDavetKodu":"%s"}
+                """.formatted(email, rol, otel.getId(), otel.getDavetKodu());
+
+        return mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andReturn();
     }
 
     @Test
@@ -126,5 +160,53 @@ class AuthFlowIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isConflict());
+    }
+
+    // ---------- OTEL_YONETICISI kaydi + koltuk siniri (bkz. AuthService#register) ----------
+
+    @Test
+    void otelYoneticisiKaydi_otelIdVeDavetKoduIleBasariliOlur() throws Exception {
+        Otel otel = otelOlustur(1);
+
+        MvcResult result = kaydolIste("OTEL_YONETICISI", otel);
+
+        assertThat(result.getResponse().getStatus()).isEqualTo(201);
+        JsonNode json = objectMapper.readTree(result.getResponse().getContentAsString());
+        assertThat(json.get("role").asText()).isEqualTo("OTEL_YONETICISI");
+        assertThat(json.get("otelId").asLong()).isEqualTo(otel.getId());
+    }
+
+    @Test
+    void koltukSiniriDoluOtelde_yeniOtelCalisaniKaydi400IleReddedilir() throws Exception {
+        // Koltuk sinirini 1 yapiyoruz, ilk OTEL_CALISANI kaydiyla koltuk doluyor.
+        Otel otel = otelOlustur(1);
+        MvcResult ilkCalisanSonucu = kaydolIste("OTEL_CALISANI", otel);
+        assertThat(ilkCalisanSonucu.getResponse().getStatus()).isEqualTo(201);
+
+        MvcResult ikinciCalisanSonucu = kaydolIste("OTEL_CALISANI", otel);
+
+        assertThat(ikinciCalisanSonucu.getResponse().getStatus())
+                .as("koltuk siniri dolmus bir otelde ikinci OTEL_CALISANI kaydi 400 ile reddedilmeli")
+                .isEqualTo(400);
+        JsonNode json = objectMapper.readTree(ikinciCalisanSonucu.getResponse().getContentAsString());
+        assertThat(json.get("message").asText()).contains("Koltuk siniri doldu");
+    }
+
+    @Test
+    void koltukSiniriDoluOtelde_OtelYoneticisiKaydiKoltukSinirindanEtkilenmez() throws Exception {
+        // Ayni senaryo: koltuk siniri 1, zaten 1 OTEL_CALISANI var. Ama OTEL_YONETICISI
+        // kaydi koltuk sayilmadigi icin (UyelikService#kullanilanKoltukSayisi sadece
+        // OTEL_CALISANI sayar) koltuk siniri dolu olsa da BASARILI olmali.
+        Otel otel = otelOlustur(1);
+        MvcResult calisanSonucu = kaydolIste("OTEL_CALISANI", otel);
+        assertThat(calisanSonucu.getResponse().getStatus()).isEqualTo(201);
+
+        MvcResult yoneticiSonucu = kaydolIste("OTEL_YONETICISI", otel);
+
+        assertThat(yoneticiSonucu.getResponse().getStatus())
+                .as("OTEL_YONETICISI kaydi koltuk sinirindan etkilenmemeli")
+                .isEqualTo(201);
+        JsonNode json = objectMapper.readTree(yoneticiSonucu.getResponse().getContentAsString());
+        assertThat(json.get("role").asText()).isEqualTo("OTEL_YONETICISI");
     }
 }

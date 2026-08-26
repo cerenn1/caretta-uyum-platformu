@@ -53,6 +53,17 @@ public class User implements UserDetails {
     @JoinColumn(name = "otel_id")
     private Otel otel;
 
+    // DIKKAT: nullable = false KOYMA. Davet kodu/koltuk alanlarindaki AYNI sebeple -
+    // veritabaninda zaten kayitli kullanicilar var, ddl-auto=update ile NOT NULL kolon
+    // eklemek semayi patlatir. Mevcut kullanicilar icin backfill runner (bkz.
+    // common.init.KullaniciAktifBackfillRunner) acilista true atar; null iken de
+    // isEnabled() geriye donuk uyumluluk icin aktif sayar (asagida). YENI kayitlarin
+    // hepsi (bkz. AuthService#register) Boolean.TRUE ile olusturulur, null sadece
+    // gecmis (backfill ONCESI) kayitlarda gorulur.
+    @Builder.Default
+    @Column(nullable = true)
+    private Boolean aktif = Boolean.TRUE;
+
     @Builder.Default
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -84,6 +95,9 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        // null = ozellik eklenmeden once olusturulmus (backfill ONCESI) kullanici ->
+        // geriye donuk uyumluluk icin aktif sayilir, aksi halde TUM mevcut kullanicilar
+        // aniden giris yapamaz hale gelirdi.
+        return aktif == null || aktif;
     }
 }

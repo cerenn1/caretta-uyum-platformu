@@ -53,11 +53,15 @@ class PanelOzetiIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        // satinAlinanKoltukSayisi ELLE verilir (bkz. UyelikIntegrationTest#setUp ile AYNI
+        // desen) - AuthService'teki koltuk siniri kontrolu icin gerekli, aksi halde null (=0)
+        // kalir ve otel calisani kaydi HER ZAMAN reddedilir.
         otelA = otelRepository.save(Otel.builder()
                 .ad("Panel Testi Otel A " + UUID.randomUUID())
                 .latitude(36.85)
                 .longitude(30.7)
                 .davetKodu(rastgeleTestDavetKodu())
+                .satinAlinanKoltukSayisi(10)
                 .build());
     }
 

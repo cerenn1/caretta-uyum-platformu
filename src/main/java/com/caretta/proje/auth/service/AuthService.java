@@ -12,6 +12,7 @@ import com.caretta.proje.common.exception.GecersizIstekException;
 import com.caretta.proje.common.exception.ResourceNotFoundException;
 import com.caretta.proje.otel.entity.Otel;
 import com.caretta.proje.otel.service.OtelService;
+import com.caretta.proje.uyelik.service.UyelikService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,6 +28,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final OtelService otelService;
+    private final UyelikService uyelikService;
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email())) {
@@ -36,14 +38,26 @@ public class AuthService {
         Rol rol = request.role() != null ? request.role() : Rol.KULLANICI;
         Otel otel = null;
 
-        if (rol == Rol.OTEL_CALISANI) {
+        if (rol == Rol.OTEL_CALISANI || rol == Rol.OTEL_YONETICISI) {
             if (request.otelId() == null) {
-                throw new GecersizIstekException("Otel calisani kaydi icin otelId zorunlu");
+                throw new GecersizIstekException("Otel calisani/yoneticisi kaydi icin otelId zorunlu");
             }
             if (request.otelDavetKodu() == null || request.otelDavetKodu().isBlank()) {
-                throw new GecersizIstekException("Otel calisani kaydi icin davet kodu zorunlu");
+                throw new GecersizIstekException("Otel calisani/yoneticisi kaydi icin davet kodu zorunlu");
             }
             otel = dogrulanmisOteliGetir(request.otelId(), request.otelDavetKodu());
+
+            // Koltuk siniri SADECE OTEL_CALISANI kaydinda zorlanir - yoneticiler koltuktan
+            // SAYILMAZ (UyelikService#kullanilanKoltukSayisi zaten sadece OTEL_CALISANI
+            // rolundekileri sayiyor), bu yuzden yonetici kaydi bu sinirdan HIC etkilenmez.
+            if (rol == Rol.OTEL_CALISANI) {
+                long kullanilan = uyelikService.kullanilanKoltukSayisi(otel.getId());
+                int satinAlinan = otel.getSatinAlinanKoltukSayisi() != null ? otel.getSatinAlinanKoltukSayisi() : 0;
+                if (kullanilan >= satinAlinan) {
+                    throw new GecersizIstekException(
+                            "Koltuk siniri doldu (" + kullanilan + "/" + satinAlinan + "). Yeni calisan eklemek icin otel yoneticisi koltuk satin almali.");
+                }
+            }
         }
 
         User user = User.builder()

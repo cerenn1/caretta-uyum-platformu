@@ -54,11 +54,17 @@ class OtelYetkilendirmeIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        // NOT: OtelService.ekle() BYPASS ediliyor (dogrudan repository.save), bu yuzden
+        // koltuk bazli uyelik alanlari (bkz. UyelikIntegrationTest#setUp ile AYNI desen)
+        // ELLE verilir - aksi halde satinAlinanKoltukSayisi null (=0) kalir ve AuthService'teki
+        // koltuk siniri kontrolu (0 kullanilan >= 0 satin alinan) HER otel calisani
+        // kaydini reddeder.
         otelA = otelRepository.save(Otel.builder()
                 .ad("Yetki Testi Otel A " + UUID.randomUUID())
                 .latitude(36.85)
                 .longitude(30.7)
                 .davetKodu(rastgeleTestDavetKodu())
+                .satinAlinanKoltukSayisi(10)
                 .build());
 
         otelB = otelRepository.save(Otel.builder()
@@ -66,6 +72,7 @@ class OtelYetkilendirmeIntegrationTest {
                 .latitude(37.0)
                 .longitude(31.0)
                 .davetKodu(rastgeleTestDavetKodu())
+                .satinAlinanKoltukSayisi(10)
                 .build());
     }
 
