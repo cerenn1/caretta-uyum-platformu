@@ -71,6 +71,17 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- Koltuk bazli uyelik odemesi (Stripe Checkout, TEST/SANDBOX modu).
+		     Kart bilgisi bizim sunucumuza hic gelmiyor - sadece Stripe'in barindirdigi
+		     odeme sayfasina yonlendirme URL'i olusturuluyor. Maven Central'daki en son
+		     stabil surum (33.4.0 sadece alpha yayinlar aldigi icin bir onceki stabil
+		     olan 33.3.0 secildi). -->
+		<dependency>
+			<groupId>com.stripe</groupId>
+			<artifactId>stripe-java</artifactId>
+			<version>33.3.0</version>
+		</dependency>
+
 		<!-- JWT uretimi ve dogrulamasi icin -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>

@@ -65,6 +65,12 @@ public class SecurityConfig {
                         // Ayni gerekceyle (kisisel veri yok, "Etkimiz / Kapsam Alanimiz"
                         // bolumunde disariya/fon kuruluslarina gosterilecek) bilerek permitAll.
                         .requestMatchers(HttpMethod.GET, "/api/kapsam-alani").permitAll()
+                        // Stripe webhook'u JWT/kullanici girisi GEREKTIRMEZ - kendi guvenligini
+                        // Stripe-Signature basligindaki imza saglar (bkz. StripeOdemeServisi#webhookIsle).
+                        .requestMatchers(HttpMethod.POST, "/api/stripe/webhook").permitAll()
+                        // Demo amacli manuel premium isaretleme araci - JWT GEREKTIRMEZ, kendi
+                        // guvenligini paylasilan X-Admin-Key basligi saglar (bkz. UyelikService).
+                        .requestMatchers(HttpMethod.POST, "/api/admin/otel/*/premium-durum").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ödeme Alındı — Caretta Uyum Platformu</title>
+<link rel="stylesheet" href="vendor/fonts/inter.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <!-- Bu sayfa SADECE Stripe Checkout'un basari durumunda yonlendirdigi bir yer
+         tutucudur. Koltuk sayisi burada DEGIL, sunucu tarafinda imzasi dogrulanmis
+         webhook islendiginde artar (bkz. StripeOdemeServisi#webhookIsle) - bu yuzden
+         mesaj "kısa süre içinde güncellenecek" diyor, "güncellendi" demiyor. -->
+    <section class="card-section">
+      <h2>🐢 Ödeme Alındı</h2>
+      <p>
+        Ödemeniz başarıyla alındı. Koltuk sayınız, ödeme sağlayıcımızdan (Stripe) gelen
+        onay kısa süre içinde işlendikten sonra hesabınıza yansıyacak.
+      </p>
+      <a class="btn btn-primary" href="index.html">Ana Sayfaya Dön</a>
+    </section>
+  </main>
+</body>
+</html>

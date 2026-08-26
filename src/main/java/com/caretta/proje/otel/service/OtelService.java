@@ -6,6 +6,7 @@ import com.caretta.proje.otel.dto.OtelRequest;
 import com.caretta.proje.otel.dto.OtelResponse;
 import com.caretta.proje.otel.entity.Otel;
 import com.caretta.proje.otel.repository.OtelRepository;
+import com.caretta.proje.uyelik.entity.UyelikDurumu;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,12 @@ public class OtelService {
                 .latitude(request.latitude())
                 .longitude(request.longitude())
                 .davetKodu(davetKoduUretici.uret())
+                // davetKodu ile AYNI mantik: yeni bir otel hicbir zaman bu alanlari null
+                // birakmaz, backfill runner sadece OZELLIK EKLENMEDEN ONCE olusturulmus
+                // gecmis kayitlar icindir (bkz. Otel#VARSAYILAN_DENEME_KOLTUK_SAYISI).
+                .satinAlinanKoltukSayisi(Otel.VARSAYILAN_DENEME_KOLTUK_SAYISI)
+                .uyelikDurumu(UyelikDurumu.DENEME)
+                .manuelPremiumMu(false)
                 .build();
 
         otelRepository.save(otel);
