@@ -62,7 +62,8 @@ public class UyelikService {
                 otel.getSatinAlinanKoltukSayisi(),
                 kullanilanKoltukSayisi(otel.getId()),
                 otel.getUyelikDurumu(),
-                premiumMu(otel)
+                premiumMu(otel),
+                otel.getDavetKodu()
         );
     }
 

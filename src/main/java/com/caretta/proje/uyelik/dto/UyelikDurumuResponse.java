@@ -7,6 +7,10 @@ public record UyelikDurumuResponse(
         Integer satinAlinanKoltukSayisi,
         long kullanilanKoltukSayisi,
         UyelikDurumu uyelikDurumu,
-        boolean premiumMu
+        boolean premiumMu,
+        // GUVENLIK NOTU: bu alan sizinti degildir - endpoint zaten yatay yetki kontrolunden
+        // (bkz. UyelikService#uyelikDurumuGetir -> otelErisimYetkisiDogrula) gectigi icin
+        // SADECE o otelin kendi calisani/yoneticisi davet kodunu gorebilir.
+        String davetKodu
 ) {
 }
