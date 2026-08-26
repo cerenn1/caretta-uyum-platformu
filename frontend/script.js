@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8080";
+const API_BASE = "https://caretta-uyum-platformu-backend.onrender.com";
 
 const state = {
   token: localStorage.getItem("caretta_token") || null,
