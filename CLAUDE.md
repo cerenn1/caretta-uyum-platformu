@@ -32,7 +32,7 @@ Tam proje planı (problem, gelir modeli, mimari gerekçeler, riskler) `docs/proj
 
 ## Mimari
 
-**Modular Monolith + Clean Architecture.** Modüller: `auth`, `yuvatakip`, `isikuyum`, `raporlama`, `bildirim`, `puansistemi`.
+**Modular Monolith + Clean Architecture.** Modüller: `auth`, `yuvatakip`, `isikuyum`, `raporlama`, `bildirim`, `puansistemi`, `uyelik`, `istatistik`.
 
 Klasör yapısı önerisi (Spring Boot paket bazlı):
 ```
@@ -189,6 +189,9 @@ Güvenlik denetiminde tespit edilen, MVP için engelleyici **olmayan** ama ilgil
 
 4. **Rate limit (istek sınırlaması) yok — ödeme yapan birden fazla müşteri onboard edilmeden önce eklenmeli.**
    Uygulamada hiçbir endpoint'te kullanıcı/IP başına istek sınırı bulunmuyor. Beş nokta öne çıkıyor: (a) `POST /api/auth/register` herkese açık — spam hesap açma ve otel davet kodu deneme yolu; kod uzayı (32 karakterli alfabe, 8 hane ≈ 1,1 trilyon kombinasyon) kaba kuvveti pratikte imkânsız kıldığı için bugün kritik değil, ama tek savunma bu. (b) `GET /api/otel/{id}/uyum-raporu` uygulamanın en pahalı endpoint'i — 365 güne kadar tablo üretip PDF oluşturuyor. Yetkilendirme atlatılamıyor ve tek isteğin maliyeti düşük (~40-50KB, 1 saniyenin altı), ancak kimliği doğrulanmış (veya çalınmış token'a sahip) bir kullanıcı art arda büyük rapor isteyerek sunucu iş parçacıklarını meşgul edebilir. (c) `GET /api/istatistikler` (fon başvurusu/ortaklık istatistik endpoint'i, Ağustos 2026'da eklendi) bilerek `permitAll` — yani (a) ve (b)'nin aksine bu endpoint'i tetiklemek için JWT bile gerekmiyor, saldırı yüzeyini kimliksiz bir noktaya taşıyor; her istekte aktif otel sayısı kadar ek sorgu çalıştırıyor. (d) `GET /api/katki-sertifikasi` (Ağustos 2026'da eklendi) kimliği doğrulanmış her kullanıcının tek sayfalık bir PDF ürettiği endpoint — `uyum-raporu`'ndan daha ucuz (takvim/sayfalama yok) ama yine de her istekte CPU/IO harcıyor, aynı token-taşıyan-kullanıcı riski (b) ile aynı. (e) `GET /api/kapsam-alani` (Ağustos 2026'da eklendi, "Etkimiz/Kapsam Alanımız" için) da `permitAll` — her istekte **tüm** `yuva_kayitlari` tablosunu belleğe çekip 21 sabit referans noktasıyla Haversine karşılaştırması yapıyor (O(N×21)); kayıt sayısı arttıkça (c)'den daha pahalı hale gelebilir, kimlik doğrulama gerektirmediği için tek savunma IP bazlı sınırlama olur. Kullanıcı/IP başına basit bir sınır (örn. Bucket4j) tüm bu PDF/agregat endpoint'lerini kapsayacak şekilde eklenmelidir; `/api/istatistikler` ve `/api/kapsam-alani` için ayrıca sonucu birkaç dakika cache'lemek de (zaten günlük hassasiyette bir veri) makul bir ek önlem olur.
+
+5. **Demo amaçlı "manuel premium işaretleme" aracı GERÇEK bir admin-rol sistemi DEĞİL — üretime geçmeden önce değiştirilmeli.**
+   `POST /api/admin/otel/{id}/premium-durum` (Ağustos 2026'da eklendi, koltuk bazlı üyelik sisteminin parçası) sunumda ödeme akışından geçmeden premium özellik gösterebilmek için var. Projede henüz bir "admin kullanıcı/rol" kavramı olmadığı için bu endpoint, kimlik doğrulama (JWT) yerine paylaşılan bir gizli anahtarla (`X-Admin-Key` header, `.env`'deki `ADMIN_API_KEY` ile sabit-zamanlı karşılaştırma) korunuyor. Bu bilinçli bir kısayol — bugün için risk oluşturmuyor çünkü anahtar sadece geliştiricide/`.env`'de duruyor ve `.env` asla commit edilmiyor. Ancak gerçek bir admin ekibi (birden fazla kişi) olursa veya bu anahtar bir şekilde sızarsa, herkes herhangi bir oteli premium yapabilir — o noktaya gelmeden önce gerçek bir `ADMIN` rolü + kullanıcı hesabı sistemine geçilmeli.
 
 ## Terim Sözlüğü
 
