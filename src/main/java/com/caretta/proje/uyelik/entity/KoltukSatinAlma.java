@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -60,4 +61,15 @@ public class KoltukSatinAlma {
     // Sadece durum TAMAMLANDI olunca doldurulur - webhook basariyla islendigi an damgalanir.
     @Column(name = "tamamlanma_zamani")
     private LocalDateTime tamamlanmaZamani;
+
+    // JPA optimistic locking: Stripe ayni webhook'u birden fazla kez gonderebilecegini
+    // GARANTI eder (retry mekanizmasi, ag gecikmesi vb.). Bu alan olmadan iki eszamanli
+    // webhook istegi ikisi de "durum == BEKLIYOR" okuyup ikisi de TAMAMLANDI'ya gecirebilir
+    // ve otelin koltuk sayisini IKI KEZ arttirabilirdi (lost update / bedava koltuk riski).
+    // Hibernate her UPDATE'te bu sutunu kontrol eder; ayni anda iki islem ayni versiyonu
+    // okuyup guncellemeye calisirsa ikincisi ObjectOptimisticLockingFailureException alir
+    // (bkz. StripeOdemeServisi#webhookIsle). Mevcut satirlar icin null/0 ile baslar, elle
+    // set edilmez - Hibernate tarafindan otomatik yonetilir.
+    @Version
+    private Long versiyon;
 }

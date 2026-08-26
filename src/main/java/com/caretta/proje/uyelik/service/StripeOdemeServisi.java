@@ -20,6 +20,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -120,7 +121,10 @@ public class StripeOdemeServisi {
      * iletmelidir, aksi halde HMAC-SHA256 imzasi uyusmaz (bkz. StripeWebhookController).
      *
      * Idempotent: Stripe ayni webhook'u birden fazla kez gonderebilecegini garanti eder,
-     * bu yuzden ayni session zaten TAMAMLANDI ise koltuk sayisi TEKRAR ARTTIRILMAZ.
+     * bu yuzden ayni session zaten TAMAMLANDI ise koltuk sayisi TEKRAR ARTTIRILMAZ. Bu kontrol
+     * ARDISIK (sequential) tekrarlar icin yeterlidir; NEREDEYSE ESZAMANLI iki tekrar icin ise
+     * asagida KoltukSatinAlma#versiyon uzerinden JPA optimistic locking + saveAndFlush ile
+     * ayrica korunuyor (detay icin asagidaki yorumlara bak).
      */
     @Transactional
     public void webhookIsle(String payload, String sigHeader) {
@@ -161,7 +165,31 @@ public class StripeOdemeServisi {
 
         satinAlma.setDurum(SatinAlmaDurumu.TAMAMLANDI);
         satinAlma.setTamamlanmaZamani(LocalDateTime.now());
-        koltukSatinAlmaRepository.save(satinAlma);
+
+        // GUVENLIK/EZAMANLILIK: Stripe ayni webhook'u birden fazla kez gonderebilecegini
+        // GARANTI eder (retry mekanizmasi, ag gecikmesi vb.). Yukaridaki "durum == TAMAMLANDI mi"
+        // kontrolu TEK BASINA bir race condition'a karsi korumasizdir - iki webhook istegi
+        // (A ve B) neredeyse ayni anda gelirse ikisi de durumu BEKLIYOR okuyabilir (henuz
+        // kimse commit etmeden), ikisi de bu kontrolu gecip Otel'in koltuk sayisini ARTTIRABILIR
+        // (lost update - otel odediginden fazla/bedava koltuk kazanir).
+        //
+        // Bunu onlemek icin KoltukSatinAlma#versiyon alaninda JPA optimistic locking kullaniliyor.
+        // saveAndFlush() BILINCLI olarak duz save() yerine cagriliyor: save() flush'i transaction
+        // commit'ine kadar erteleyebilir, bu da A ve B'nin ikisinin de versiyon celismesi hic
+        // FIRLAMADAN Otel guncellemesine ulasmasina izin verirdi. saveAndFlush(), versiyon
+        // celismesini HEMEN (Otel guncellemesine gecmeden ONCE) tetikler: A once flush edip
+        // versiyonu arttirinca, B'nin (eski versiyonla yuklenmis) UPDATE'i Hibernate tarafindan
+        // ObjectOptimisticLockingFailureException ile reddedilir.
+        try {
+            koltukSatinAlmaRepository.saveAndFlush(satinAlma);
+        } catch (ObjectOptimisticLockingFailureException e) {
+            // Baska bir eszamanli webhook istegi bu kaydi BIZDEN ONCE tamamladi - Otel
+            // guncellemesi ATLANIR, hata FIRLATILMAZ. Stripe'a yine de 200 donulmeli,
+            // aksi halde Stripe bu webhook'u sonsuza kadar tekrar dener.
+            log.info("Webhook: {} session'i icin optimistic lock celismesi - baska bir eszamanli " +
+                    "istek zaten tamamlamis, koltuk sayisi tekrar arttirilmiyor", session.getId());
+            return;
+        }
 
         Otel otel = satinAlma.getOtel();
         int mevcutKoltuk = otel.getSatinAlinanKoltukSayisi() != null ? otel.getSatinAlinanKoltukSayisi() : 0;

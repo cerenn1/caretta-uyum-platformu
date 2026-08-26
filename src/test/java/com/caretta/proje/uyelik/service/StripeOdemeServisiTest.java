@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.crypto.Mac;
@@ -133,7 +134,7 @@ class StripeOdemeServisiTest {
         assertThat(otel.getSatinAlinanKoltukSayisi()).isEqualTo(7); // 2 (mevcut) + 5 (satin alinan)
         assertThat(otel.getUyelikDurumu()).isEqualTo(UyelikDurumu.AKTIF);
 
-        verify(koltukSatinAlmaRepository).save(satinAlma);
+        verify(koltukSatinAlmaRepository).saveAndFlush(satinAlma);
         verify(otelRepository).save(otel);
     }
 
@@ -157,6 +158,34 @@ class StripeOdemeServisiTest {
                 .isEqualTo(7);
         verify(otelRepository, never()).save(any());
         verify(koltukSatinAlmaRepository, never()).save(any());
+    }
+
+    @Test
+    void webhookIsle_esZamanliWebhookOptimisticLockCelismesiIleKoltukSayisiArtmazVeHataFirlamaz() {
+        // Bu senaryo, ayni webhook'un NEREDEYSE ESZAMANLI iki kez gelmesini simule eder:
+        // baska bir istek (thread) bu kaydi TAM saveAndFlush() cagirdigimiz anda bizden
+        // once TAMAMLANDI'ya cevirip commit etmis olsun - repository.saveAndFlush(...)
+        // bu durumda Hibernate'in firlatacagi ObjectOptimisticLockingFailureException'i
+        // yansitir. webhookIsle bu istisnayi yakalayip SESSIZCE (hata firlatmadan) donmeli
+        // ve Otel guncellemesine HIC ULASMAMALI (otelRepository.save asla cagrilmamali).
+        String sessionId = "cs_test_esz_race_condition";
+        String payload = checkoutSessionCompletedPayload(sessionId);
+        String sigHeader = imzaliBaslikUret(payload, WEBHOOK_SECRET, Instant.now().getEpochSecond());
+
+        Otel otel = otel(2, UyelikDurumu.DENEME);
+        KoltukSatinAlma satinAlma = satinAlma(sessionId, SatinAlmaDurumu.BEKLIYOR, otel, 5);
+
+        when(koltukSatinAlmaRepository.findByStripeCheckoutSessionId(sessionId))
+                .thenReturn(Optional.of(satinAlma));
+        when(koltukSatinAlmaRepository.saveAndFlush(satinAlma))
+                .thenThrow(new ObjectOptimisticLockingFailureException(KoltukSatinAlma.class, satinAlma.getId()));
+
+        stripeOdemeServisi.webhookIsle(payload, sigHeader);
+
+        assertThat(otel.getSatinAlinanKoltukSayisi())
+                .as("optimistic lock celismesinde koltuk sayisi BIR KEZ bile artmamali")
+                .isEqualTo(2);
+        verify(otelRepository, never()).save(any());
     }
 
     @Test
