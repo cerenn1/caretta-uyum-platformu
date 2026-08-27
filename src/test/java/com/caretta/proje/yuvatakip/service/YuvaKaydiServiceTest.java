@@ -2,6 +2,7 @@ package com.caretta.proje.yuvatakip.service;
 
 import com.caretta.proje.auth.entity.Rol;
 import com.caretta.proje.auth.entity.User;
+import com.caretta.proje.otel.service.FotografDepolamaServisi;
 import com.caretta.proje.otel.service.OtelService;
 import com.caretta.proje.otel.service.OtelYoneticiService;
 import com.caretta.proje.puansistemi.service.PuanService;
@@ -38,6 +39,9 @@ class YuvaKaydiServiceTest {
     @Mock
     private OtelService otelService;
 
+    @Mock
+    private FotografDepolamaServisi fotografDepolamaServisi;
+
     private YuvaKaydiService yuvaKaydiService;
 
     private User kullanici() {
@@ -56,10 +60,10 @@ class YuvaKaydiServiceTest {
 
     @Test
     void ekle_HaritaBonusuOlmadanSadeceTemelPuanEklenir() {
-        yuvaKaydiService = new YuvaKaydiService(yuvaKaydiRepository, puanService, otelYoneticiService, otelService);
+        yuvaKaydiService = new YuvaKaydiService(yuvaKaydiRepository, puanService, otelYoneticiService, otelService, fotografDepolamaServisi);
         User kullanici = kullanici();
 
-        yuvaKaydiService.ekle(request(null), kullanici);
+        yuvaKaydiService.ekle(request(null), null, kullanici);
 
         verify(puanService).puanEkle(kullanici, 10, "YUVA_KAYDI_EKLENDI");
         verifyNoMoreInteractions(puanService);
@@ -67,10 +71,10 @@ class YuvaKaydiServiceTest {
 
     @Test
     void ekle_HaritadanSecildiMiFalseIseSadeceTemelPuanEklenir() {
-        yuvaKaydiService = new YuvaKaydiService(yuvaKaydiRepository, puanService, otelYoneticiService, otelService);
+        yuvaKaydiService = new YuvaKaydiService(yuvaKaydiRepository, puanService, otelYoneticiService, otelService, fotografDepolamaServisi);
         User kullanici = kullanici();
 
-        yuvaKaydiService.ekle(request(false), kullanici);
+        yuvaKaydiService.ekle(request(false), null, kullanici);
 
         verify(puanService).puanEkle(kullanici, 10, "YUVA_KAYDI_EKLENDI");
         verifyNoMoreInteractions(puanService);
@@ -78,10 +82,10 @@ class YuvaKaydiServiceTest {
 
     @Test
     void ekle_HaritadanSecildiMiTrueIseHemTemelHemBonusPuaniEklenir() {
-        yuvaKaydiService = new YuvaKaydiService(yuvaKaydiRepository, puanService, otelYoneticiService, otelService);
+        yuvaKaydiService = new YuvaKaydiService(yuvaKaydiRepository, puanService, otelYoneticiService, otelService, fotografDepolamaServisi);
         User kullanici = kullanici();
 
-        yuvaKaydiService.ekle(request(true), kullanici);
+        yuvaKaydiService.ekle(request(true), null, kullanici);
 
         verify(puanService).puanEkle(kullanici, 10, "YUVA_KAYDI_EKLENDI");
         verify(puanService).puanEkle(kullanici, 5, "HARITADAN_KONUM_SECILDI_BONUS");

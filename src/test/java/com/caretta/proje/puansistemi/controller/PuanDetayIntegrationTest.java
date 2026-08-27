@@ -16,6 +16,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -53,14 +54,13 @@ class PuanDetayIntegrationTest {
     }
 
     private void yuvaKaydiEkle(String token, String tarih) throws Exception {
-        String body = """
-                {"latitude":36.85,"longitude":30.7,"tarih":"%s","durum":"AKTIF","notlar":"puan detay testi"}
-                """.formatted(tarih);
-
-        mockMvc.perform(post("/api/yuva-kayitlari")
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+        mockMvc.perform(multipart("/api/yuva-kayitlari")
+                        .param("latitude", "36.85")
+                        .param("longitude", "30.7")
+                        .param("tarih", tarih)
+                        .param("durum", "AKTIF")
+                        .param("notlar", "puan detay testi")
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isCreated());
     }
 

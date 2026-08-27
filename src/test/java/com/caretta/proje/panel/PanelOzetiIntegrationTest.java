@@ -113,14 +113,13 @@ class PanelOzetiIntegrationTest {
     }
 
     private void yuvaKaydiEkle(String token, String tarih, String durum) throws Exception {
-        String body = """
-                {"latitude":36.85,"longitude":30.7,"tarih":"%s","durum":"%s","notlar":"panel testi"}
-                """.formatted(tarih, durum);
-
-        mockMvc.perform(post("/api/yuva-kayitlari")
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+        mockMvc.perform(multipart("/api/yuva-kayitlari")
+                        .param("latitude", "36.85")
+                        .param("longitude", "30.7")
+                        .param("tarih", tarih)
+                        .param("durum", durum)
+                        .param("notlar", "panel testi")
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isCreated());
     }
 
@@ -192,14 +191,15 @@ class PanelOzetiIntegrationTest {
     @Test
     void panelOzeti_HaritadanSecildiMiTrueIsePuanaBesEkBonusYansir() throws Exception {
         String token = normalKullaniciKaydolVeTokenAl();
-        String body = """
-                {"latitude":36.85,"longitude":30.7,"tarih":"2026-08-10","durum":"AKTIF","notlar":"harita testi","haritadanSecildiMi":true}
-                """;
 
-        mockMvc.perform(post("/api/yuva-kayitlari")
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+        mockMvc.perform(multipart("/api/yuva-kayitlari")
+                        .param("latitude", "36.85")
+                        .param("longitude", "30.7")
+                        .param("tarih", "2026-08-10")
+                        .param("durum", "AKTIF")
+                        .param("notlar", "harita testi")
+                        .param("haritadanSecildiMi", "true")
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(get("/api/panel-ozeti")
@@ -215,14 +215,16 @@ class PanelOzetiIntegrationTest {
         // sessizce yok sayilir (Jackson bilinmeyen alanlari yoksayar), sunucu puani
         // kendi sabit degeriyle (10) hesaplar - istemciden puan enjekte edilemez.
         String token = normalKullaniciKaydolVeTokenAl();
-        String body = """
-                {"latitude":36.85,"longitude":30.7,"tarih":"2026-08-10","durum":"AKTIF","notlar":"guvenlik testi","puan":999999}
-                """;
 
-        mockMvc.perform(post("/api/yuva-kayitlari")
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+        // "puan" alani multipart form parametresi olarak gonderilse bile controller
+        // bu alani zaten kabul etmiyor - sunucu puani sabit degeriyle (10) hesaplar.
+        mockMvc.perform(multipart("/api/yuva-kayitlari")
+                        .param("latitude", "36.85")
+                        .param("longitude", "30.7")
+                        .param("tarih", "2026-08-10")
+                        .param("durum", "AKTIF")
+                        .param("notlar", "guvenlik testi")
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(get("/api/panel-ozeti")

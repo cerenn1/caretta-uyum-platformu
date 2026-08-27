@@ -54,6 +54,9 @@ public class YuvaKaydi {
     @Column(columnDefinition = "TEXT")
     private String notlar;
 
+    // Opsiyonel - kayit ile birlikte fotograf yuklenmediyse null kalir.
+    private String fotografYolu;
+
     @Builder.Default
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

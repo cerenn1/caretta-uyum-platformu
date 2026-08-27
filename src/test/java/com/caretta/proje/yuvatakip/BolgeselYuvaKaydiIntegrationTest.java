@@ -114,14 +114,14 @@ class BolgeselYuvaKaydiIntegrationTest {
     }
 
     private void yuvaKaydiEkle(String token, double lat, double lon) throws Exception {
-        String body = """
-                {"latitude":%s,"longitude":%s,"tarih":"2026-06-15","durum":"%s","notlar":"test notu"}
-                """.formatted(lat, lon, YuvaDurumu.values()[0].name());
-
-        mockMvc.perform(post("/api/yuva-kayitlari")
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .multipart("/api/yuva-kayitlari")
+                        .param("latitude", String.valueOf(lat))
+                        .param("longitude", String.valueOf(lon))
+                        .param("tarih", "2026-06-15")
+                        .param("durum", YuvaDurumu.values()[0].name())
+                        .param("notlar", "test notu")
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isCreated());
     }
 

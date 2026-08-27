@@ -2,6 +2,7 @@ package com.caretta.proje.yuvatakip.service;
 
 import com.caretta.proje.auth.entity.User;
 import com.caretta.proje.otel.entity.Otel;
+import com.caretta.proje.otel.service.FotografDepolamaServisi;
 import com.caretta.proje.otel.service.OtelService;
 import com.caretta.proje.otel.service.OtelYoneticiService;
 import com.caretta.proje.puansistemi.service.PuanService;
@@ -14,6 +15,7 @@ import com.caretta.proje.yuvatakip.repository.YuvaKaydiRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -34,12 +36,13 @@ public class YuvaKaydiService {
     private final PuanService puanService;
     private final OtelYoneticiService otelYoneticiService;
     private final OtelService otelService;
+    private final FotografDepolamaServisi fotografDepolamaServisi;
 
     // GUVENLIK: yuva kaydi + puan eklemeleri TEK transaction'da atomik olsun diye
     // @Transactional eklendi - aksi halde kayit basariyla kaydedilip puan eklemesi
     // (veya tam tersi) yarim kalirsa veri tutarsizligi olusabilirdi.
     @Transactional
-    public YuvaKaydiResponse ekle(YuvaKaydiRequest request, User currentUser) {
+    public YuvaKaydiResponse ekle(YuvaKaydiRequest request, MultipartFile fotograf, User currentUser) {
         YuvaKaydi kayit = YuvaKaydi.builder()
                 .user(currentUser)
                 .latitude(request.latitude())
@@ -48,6 +51,14 @@ public class YuvaKaydiService {
                 .durum(request.durum())
                 .notlar(request.notlar())
                 .build();
+
+        // Fotograf opsiyonel - gonderilmediyse (null veya bos dosya) sorun degil,
+        // kayit fotografsiz devam eder. Gonderildiyse mevcut kapanis kaniti akisiyla
+        // AYNI dogrulama kurallariyla (jpg/png, 10MB, UUID dosya adi) kaydedilir.
+        if (fotograf != null && !fotograf.isEmpty()) {
+            String fotografYolu = fotografDepolamaServisi.yuvaKaydiFotografiKaydet(fotograf, currentUser.getId());
+            kayit.setFotografYolu(fotografYolu);
+        }
 
         yuvaKaydiRepository.save(kayit);
 
@@ -78,7 +89,8 @@ public class YuvaKaydiService {
                 kayit.getDurum(),
                 kayit.getNotlar(),
                 kayit.getCreatedAt(),
-                Mevsim.hesapla(kayit.getTarih())
+                Mevsim.hesapla(kayit.getTarih()),
+                kayit.getFotografYolu()
         );
     }
 

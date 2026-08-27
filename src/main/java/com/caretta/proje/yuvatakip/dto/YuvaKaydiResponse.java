@@ -14,6 +14,7 @@ public record YuvaKaydiResponse(
         YuvaDurumu durum,
         String notlar,
         LocalDateTime createdAt,
-        Mevsim mevsim
+        Mevsim mevsim,
+        String fotografYolu
 ) {
 }

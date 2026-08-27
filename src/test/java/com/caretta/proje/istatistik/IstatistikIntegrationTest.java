@@ -103,14 +103,13 @@ class IstatistikIntegrationTest {
     }
 
     private void yuvaKaydiEkle(String token, String tarih) throws Exception {
-        String body = """
-                {"latitude":36.85,"longitude":30.7,"tarih":"%s","durum":"AKTIF","notlar":"istatistik testi"}
-                """.formatted(tarih);
-
-        mockMvc.perform(post("/api/yuva-kayitlari")
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+        mockMvc.perform(multipart("/api/yuva-kayitlari")
+                        .param("latitude", "36.85")
+                        .param("longitude", "30.7")
+                        .param("tarih", tarih)
+                        .param("durum", "AKTIF")
+                        .param("notlar", "istatistik testi")
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isCreated());
     }
 

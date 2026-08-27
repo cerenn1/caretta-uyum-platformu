@@ -20,6 +20,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -117,14 +118,13 @@ class AuthFlowIntegrationTest {
         assertThat(token).isNotBlank();
 
         // 3) Token ile korumali endpoint'e yuva kaydi ekle -> 201
-        String yuvaKaydiBody = """
-                {"latitude":36.85,"longitude":30.7,"tarih":"2026-08-18","durum":"AKTIF","notlar":"entegrasyon testi"}
-                """;
-
-        mockMvc.perform(post("/api/yuva-kayitlari")
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(yuvaKaydiBody))
+        mockMvc.perform(multipart("/api/yuva-kayitlari")
+                        .param("latitude", "36.85")
+                        .param("longitude", "30.7")
+                        .param("tarih", "2026-08-18")
+                        .param("durum", "AKTIF")
+                        .param("notlar", "entegrasyon testi")
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.notlar").value("entegrasyon testi"));
 
