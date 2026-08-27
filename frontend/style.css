@@ -1057,3 +1057,38 @@ main {
 .uyelik-durum-alani { margin-bottom: 16px; }
 
 .google-giris-ayirici { text-align: center; color: var(--metin-soluk, #64797d); margin: 10px 0; font-size: 0.85rem; }
+
+/* ---- Tanitim sayfasi: slogan, ozellik listesi, kayan arka plan ---- */
+body {
+  background-image: url("assets/hero-kumsal.svg");
+  background-repeat: repeat-y;
+  background-size: 100% auto;
+  background-attachment: fixed;
+}
+.hero-slogan {
+  font-size: var(--yazi-lg, 1.15rem);
+  font-weight: 700;
+  color: var(--mercan, #e8917a);
+  margin-bottom: 4px;
+}
+.ozellik-listesi {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-top: 28px;
+}
+.ozellik-kart {
+  background: rgba(255,255,255,0.85);
+  border-radius: var(--radius, 16px);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9rem;
+  box-shadow: var(--golge-yumusak, 0 2px 8px rgba(0,0,0,0.08));
+}
+.ozellik-kart strong { color: var(--deniz, #2f6f72); font-size: 1rem; }
+.ozellik-kart span { color: var(--metin-soluk, #64797d); }
+@media (max-width: 600px) {
+  .ozellik-listesi { grid-template-columns: 1fr; }
+}
