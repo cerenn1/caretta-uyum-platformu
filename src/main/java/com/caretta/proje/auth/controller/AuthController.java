@@ -1,6 +1,8 @@
 package com.caretta.proje.auth.controller;
 
 import com.caretta.proje.auth.dto.AuthResponse;
+import com.caretta.proje.auth.dto.GoogleGirisRequest;
+import com.caretta.proje.auth.dto.GoogleGirisResponse;
 import com.caretta.proje.auth.dto.LoginRequest;
 import com.caretta.proje.auth.dto.RegisterRequest;
 import com.caretta.proje.auth.service.AuthService;
@@ -29,6 +31,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<GoogleGirisResponse> googleIleGiris(@Valid @RequestBody GoogleGirisRequest request) {
+        GoogleGirisResponse response = authService.googleIleGiris(request);
         return ResponseEntity.ok(response);
     }
 }

@@ -82,6 +82,13 @@
 			<version>33.3.0</version>
 		</dependency>
 
+		<!-- Google ile giris - ID token dogrulamasi (GoogleIdTokenVerifier) icin. -->
+		<dependency>
+			<groupId>com.google.api-client</groupId>
+			<artifactId>google-api-client</artifactId>
+			<version>2.7.0</version>
+		</dependency>
+
 		<!-- JWT uretimi ve dogrulamasi icin -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
