@@ -4,6 +4,8 @@ import com.caretta.proje.auth.entity.User;
 import com.caretta.proje.otel.dto.CalisanDurumRequest;
 import com.caretta.proje.otel.dto.CalisanResponse;
 import com.caretta.proje.otel.service.OtelYoneticiService;
+import com.caretta.proje.yuvatakip.dto.BolgeselYuvaKaydiResponse;
+import com.caretta.proje.yuvatakip.service.YuvaKaydiService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,7 @@ import java.util.List;
 public class OtelYoneticiController {
 
     private final OtelYoneticiService otelYoneticiService;
+    private final YuvaKaydiService yuvaKaydiService;
 
     // Yatay yetki kontrolu (sadece kendi otelinin yoneticisi cagirabilir) servis
     // katmaninda yapilir (bkz. OtelYoneticiService#yoneticiErisimYetkisiDogrula),
@@ -41,5 +44,14 @@ public class OtelYoneticiController {
                                                           @AuthenticationPrincipal User currentUser) {
         otelYoneticiService.calisanDurumunuDegistir(id, calisanId, body.aktif(), currentUser);
         return ResponseEntity.noContent().build();
+    }
+
+    // Yatay yetki kontrolu (sadece kendi otelinin yoneticisi + kendi otel bolgesi)
+    // servis katmaninda yapilir (bkz. YuvaKaydiService#bolgeselKayitlariGetir).
+    @PreAuthorize("hasRole('OTEL_YONETICISI')")
+    @GetMapping("/api/otel/{id}/bolgesel-yuva-kayitlari")
+    public ResponseEntity<List<BolgeselYuvaKaydiResponse>> bolgeselYuvaKayitlari(@PathVariable("id") Long id,
+                                                                                   @AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(yuvaKaydiService.bolgeselKayitlariGetir(id, currentUser));
     }
 }

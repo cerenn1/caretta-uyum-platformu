@@ -2,6 +2,8 @@ package com.caretta.proje.yuvatakip.service;
 
 import com.caretta.proje.auth.entity.Rol;
 import com.caretta.proje.auth.entity.User;
+import com.caretta.proje.otel.service.OtelService;
+import com.caretta.proje.otel.service.OtelYoneticiService;
 import com.caretta.proje.puansistemi.service.PuanService;
 import com.caretta.proje.yuvatakip.dto.YuvaKaydiRequest;
 import com.caretta.proje.yuvatakip.entity.YuvaDurumu;
@@ -30,6 +32,12 @@ class YuvaKaydiServiceTest {
     @Mock
     private PuanService puanService;
 
+    @Mock
+    private OtelYoneticiService otelYoneticiService;
+
+    @Mock
+    private OtelService otelService;
+
     private YuvaKaydiService yuvaKaydiService;
 
     private User kullanici() {
@@ -48,7 +56,7 @@ class YuvaKaydiServiceTest {
 
     @Test
     void ekle_HaritaBonusuOlmadanSadeceTemelPuanEklenir() {
-        yuvaKaydiService = new YuvaKaydiService(yuvaKaydiRepository, puanService);
+        yuvaKaydiService = new YuvaKaydiService(yuvaKaydiRepository, puanService, otelYoneticiService, otelService);
         User kullanici = kullanici();
 
         yuvaKaydiService.ekle(request(null), kullanici);
@@ -59,7 +67,7 @@ class YuvaKaydiServiceTest {
 
     @Test
     void ekle_HaritadanSecildiMiFalseIseSadeceTemelPuanEklenir() {
-        yuvaKaydiService = new YuvaKaydiService(yuvaKaydiRepository, puanService);
+        yuvaKaydiService = new YuvaKaydiService(yuvaKaydiRepository, puanService, otelYoneticiService, otelService);
         User kullanici = kullanici();
 
         yuvaKaydiService.ekle(request(false), kullanici);
@@ -70,7 +78,7 @@ class YuvaKaydiServiceTest {
 
     @Test
     void ekle_HaritadanSecildiMiTrueIseHemTemelHemBonusPuaniEklenir() {
-        yuvaKaydiService = new YuvaKaydiService(yuvaKaydiRepository, puanService);
+        yuvaKaydiService = new YuvaKaydiService(yuvaKaydiRepository, puanService, otelYoneticiService, otelService);
         User kullanici = kullanici();
 
         yuvaKaydiService.ekle(request(true), kullanici);
