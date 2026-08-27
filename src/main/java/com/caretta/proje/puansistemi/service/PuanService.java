@@ -1,12 +1,19 @@
 package com.caretta.proje.puansistemi.service;
 
 import com.caretta.proje.auth.entity.User;
+import com.caretta.proje.auth.repository.UserRepository;
 import com.caretta.proje.puansistemi.dto.PuanDetayResponse;
+import com.caretta.proje.puansistemi.dto.SiralamaResponse;
+import com.caretta.proje.puansistemi.dto.SiralamaSatiri;
 import com.caretta.proje.puansistemi.entity.KullaniciPuani;
 import com.caretta.proje.puansistemi.entity.Rozet;
 import com.caretta.proje.puansistemi.repository.KullaniciPuaniRepository;
+import com.caretta.proje.yuvatakip.repository.YuvaKaydiRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 // GUVENLIK: puanEkle'yi disaridan dogrudan cagiran hicbir HTTP endpoint yoktur ve
 // olmamalidir. puanEkle SADECE sunucu tarafinda, ilgili is akisinin (ör.
@@ -18,15 +25,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PuanService {
 
-    // ODUL TURU (partner otel indirimi mi, dogrudan maddi odul mu) HENUZ KARARA
-    // BAGLANMADI - bu yuzden burada SPESIFIK bir sey (yuzde, tutar, indirim turu)
-    // VAAT EDILMEZ, net ama belirsiz genel bir mesaj gosterilir. Rol farki YOK -
-    // otel calisani da normal kullanici da AYNI mesaji gorur. Paket-private (test
-    // erisimi icin): bkz. PuanServiceTest.
-    static final String ODUL_MESAJI =
-            "Bu rozet seviyesinde bir ödül hak ettin! Detaylar için proje yöneticinle iletişime geç.";
-
     private final KullaniciPuaniRepository kullaniciPuaniRepository;
+    private final UserRepository userRepository;
+    private final YuvaKaydiRepository yuvaKaydiRepository;
 
     public void puanEkle(User kullanici, int puan, String sebep) {
         KullaniciPuani kayit = KullaniciPuani.builder()
@@ -45,8 +46,9 @@ public class PuanService {
 
     /**
      * Puan/rozet detay ekrani icin tum hesabin TEK KAYNAGI. yuvaKayitToplam disaridan
-     * verilir - PuanService, modul sinirlarina saygi geregi YuvaKaydiRepository'ye
-     * dogrudan bagimli degildir (bkz. PuanDetayService).
+     * verilir - detay hesabi PuanDetayService araciligiyla cagrilir. (NOT:
+     * siralamaGetir asagida hiz icin dogrudan YuvaKaydiRepository'ye bagimli -
+     * bu metodun modul siniri istisnasidir.)
      */
     public PuanDetayResponse detayHesapla(User currentUser, long yuvaKayitToplam) {
         long toplamPuan = toplamPuanHesapla(currentUser.getId());
@@ -57,15 +59,50 @@ public class PuanService {
                 ? null
                 : Math.max(0, sonrakiRozet.getEsikYuvaKayitSayisi() - yuvaKayitToplam);
 
-        String odulMesaji = mevcutRozet == null ? null : ODUL_MESAJI;
-
         return new PuanDetayResponse(
                 toplamPuan,
                 mevcutRozet == null ? null : mevcutRozet.name(),
                 yuvaKayitToplam,
                 sonrakiRozet == null ? null : sonrakiRozet.name(),
-                kalanKayit,
-                odulMesaji
+                kalanKayit
         );
+    }
+
+    /**
+     * Liderlik tablosu (/api/puan-siralamasi). Rol farki YOK - otel calisani da normal
+     * kullanici da AYNI birlesik siralamada yer alir. MVP olcegi (az kullanici) icin
+     * N+1 sorgu kabul edilebilir, optimize etmeye CALISILMADI.
+     */
+    public SiralamaResponse siralamaGetir(User currentUser) {
+        List<Object[]> siralama = kullaniciPuaniRepository.kullaniciBazindaToplamPuanSiralamasi();
+
+        List<SiralamaSatiri> tumSira = new ArrayList<>();
+        SiralamaSatiri kendiSirasi = null;
+
+        for (int i = 0; i < siralama.size(); i++) {
+            Object[] satir = siralama.get(i);
+            Long kullaniciId = (Long) satir[0];
+            long toplamPuan = ((Number) satir[1]).longValue();
+
+            String email = userRepository.findById(kullaniciId)
+                    .map(User::getEmail)
+                    .orElse("bilinmiyor");
+            long yuvaKayitToplam = yuvaKaydiRepository.countByUserId(kullaniciId);
+            Rozet rozet = Rozet.hesapla(yuvaKayitToplam);
+
+            SiralamaSatiri satiriDto = new SiralamaSatiri(
+                    i + 1, email, toplamPuan, rozet == null ? null : rozet.name());
+
+            if (i < 10) {
+                tumSira.add(satiriDto);
+            }
+            if (kullaniciId.equals(currentUser.getId())) {
+                kendiSirasi = satiriDto;
+            }
+        }
+
+        SiralamaSatiri kendiSirasiDisariAktarilacak = tumSira.contains(kendiSirasi) ? null : kendiSirasi;
+
+        return new SiralamaResponse(tumSira, kendiSirasiDisariAktarilacak);
     }
 }

@@ -84,8 +84,7 @@ class PuanDetayIntegrationTest {
                 .andExpect(jsonPath("$.rozet").doesNotExist())
                 .andExpect(jsonPath("$.yuvaKayitToplam").value(0))
                 .andExpect(jsonPath("$.sonrakiRozet").value("BRONZ"))
-                .andExpect(jsonPath("$.sonrakiRozeteKalanKayit").value(5))
-                .andExpect(jsonPath("$.odulMesaji").doesNotExist());
+                .andExpect(jsonPath("$.sonrakiRozeteKalanKayit").value(5));
     }
 
     @Test
@@ -102,8 +101,7 @@ class PuanDetayIntegrationTest {
                 .andExpect(jsonPath("$.rozet").value("BRONZ"))
                 .andExpect(jsonPath("$.yuvaKayitToplam").value(5))
                 .andExpect(jsonPath("$.sonrakiRozet").value("GUMUS"))
-                .andExpect(jsonPath("$.sonrakiRozeteKalanKayit").value(15))
-                .andExpect(jsonPath("$.odulMesaji").isNotEmpty());
+                .andExpect(jsonPath("$.sonrakiRozeteKalanKayit").value(15));
     }
 
     // --- GET /api/katki-sertifikasi ---
