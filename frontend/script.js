@@ -1063,21 +1063,27 @@ els.yuvaForm.addEventListener("submit", async (e) => {
     return;
   }
 
+  // Backend artik multipart/form-data bekliyor (opsiyonel fotograf destegi icin) -
+  // JSON govde yerine FormData kullanilir, mevcut form alanlari + fotograf birlikte gider.
   const formData = new FormData(els.yuvaForm);
+  const gonderilecek = new FormData();
+  gonderilecek.set("latitude", seciliKonum.lat);
+  gonderilecek.set("longitude", seciliKonum.lng);
+  gonderilecek.set("tarih", formData.get("tarih"));
+  gonderilecek.set("durum", formData.get("durum"));
+  if (formData.get("notlar")) gonderilecek.set("notlar", formData.get("notlar"));
+  gonderilecek.set("haritadanSecildiMi", "true");
+  const fotografDosyasi = formData.get("fotograf");
+  if (fotografDosyasi && fotografDosyasi.size > 0) {
+    if (fotografDosyasi.size > MAKS_FOTO_BAYT) {
+      setMessage("yuva", "Fotoğraf 10MB'dan büyük. Lütfen daha düşük çözünürlüklü bir fotoğraf seçin.", true);
+      return;
+    }
+    gonderilecek.set("fotograf", fotografDosyasi);
+  }
+
   try {
-    await apiRequest("/api/yuva-kayitlari", {
-      method: "POST",
-      body: JSON.stringify({
-        latitude: seciliKonum.lat,
-        longitude: seciliKonum.lng,
-        tarih: formData.get("tarih"),
-        durum: formData.get("durum"),
-        notlar: formData.get("notlar") || null,
-        // Konum artik SADECE haritadan seciliyor (elle giris kaldirildi), yani
-        // bu akis her zaman "haritadan secim" - bonus puan icin hep true gonderilir.
-        haritadanSecildiMi: true,
-      }),
-    });
+    await apiUpload("/api/yuva-kayitlari", gonderilecek);
     setMessage("yuva", "Kayıt eklendi.", false);
     els.yuvaForm.reset();
     loadYuvaKayitlari();
