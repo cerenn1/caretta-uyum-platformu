@@ -109,6 +109,21 @@
         </label>
         <button type="submit" class="btn btn-primary">Giriş Yap</button>
         <p class="form-message" data-for="login"></p>
+        <div class="google-giris-ayirici">veya</div>
+        <div id="google-giris-alani"></div>
+        <div id="google-rol-secim-alani" class="hidden">
+          <label>Kayıt Türü
+            <select id="google-rol-select">
+              <option value="KULLANICI">Vatandaş / Gözlemci</option>
+              <option value="OTEL_CALISANI">Otel Çalışanı</option>
+              <option value="OTEL_YONETICISI">Otel Yöneticisi</option>
+            </select>
+          </label>
+          <label>Otel ID<input type="number" id="google-otel-id"></label>
+          <label>Davet Kodu<input type="text" id="google-davet-kodu"></label>
+          <button type="button" id="google-tamamla-btn" class="btn btn-primary">Kaydı Tamamla</button>
+        </div>
+        <p class="form-message" data-for="google"></p>
       </form>
     </section>
 
@@ -239,6 +254,7 @@
   </div>
 
   <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="script.js"></script>
 </body>
 </html>

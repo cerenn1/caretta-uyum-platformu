@@ -937,6 +937,58 @@ els.navLogoutBtn.addEventListener("click", () => {
   updateAuthUI();
 });
 
+// ---------------------------------------------------------------------------
+// GOOGLE ILE GIRIS - Google Identity Services (GIS). GOOGLE_CLIENT_ID henuz
+// gercek bir Google Cloud Console degeriyle DEGISTIRILMEDI - bu placeholder
+// kaldigi surece Google butonu sessizce gorunmez/calismaz, sayfanin geri
+// kalani ETKILENMEZ.
+// ---------------------------------------------------------------------------
+const GOOGLE_CLIENT_ID = "BURAYA-GERCEK-GOOGLE-CLIENT-ID-YAZILACAK.apps.googleusercontent.com";
+let sonGoogleIdToken = null;
+
+function googleGirisiniBaslat() {
+  if (!window.google || GOOGLE_CLIENT_ID.includes("BURAYA-GERCEK")) return; // henuz yapilandirilmadi
+  google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: googleGirisCallback });
+  google.accounts.id.renderButton(document.getElementById("google-giris-alani"), { theme: "outline", size: "large" });
+}
+
+async function googleGirisCallback(response) {
+  sonGoogleIdToken = response.credential;
+  try {
+    const veri = await apiRequest("/api/auth/google", {
+      method: "POST",
+      body: JSON.stringify({ idToken: sonGoogleIdToken }),
+    });
+    if (veri.yeniKullaniciMi && !veri.authResponse) {
+      document.getElementById("google-rol-secim-alani").classList.remove("hidden");
+      setMessage("google", "Hesabın ilk defa giriyor, lütfen kayıt türünü seç.", false);
+      return;
+    }
+    girisSonrasiHazirla(veri.authResponse);
+  } catch (err) {
+    setMessage("google", err.message, true);
+  }
+}
+
+document.getElementById("google-tamamla-btn").addEventListener("click", async () => {
+  const role = document.getElementById("google-rol-select").value;
+  const otelGerekli = role === "OTEL_CALISANI" || role === "OTEL_YONETICISI";
+  const otelId = otelGerekli ? Number(document.getElementById("google-otel-id").value) || null : null;
+  const otelDavetKodu = otelGerekli ? document.getElementById("google-davet-kodu").value || null : null;
+
+  try {
+    const veri = await apiRequest("/api/auth/google", {
+      method: "POST",
+      body: JSON.stringify({ idToken: sonGoogleIdToken, role, otelId, otelDavetKodu }),
+    });
+    girisSonrasiHazirla(veri.authResponse);
+  } catch (err) {
+    setMessage("google", err.message, true);
+  }
+});
+
+window.addEventListener("load", () => setTimeout(googleGirisiniBaslat, 500));
+
 function girisSonrasiHazirla(data) {
   saveSession(data.token, data.email, data.role, data.otelId);
   updateAuthUI();
