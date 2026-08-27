@@ -37,6 +37,7 @@ const els = {
   yoneticiDavetKodu: document.getElementById("yonetici-davet-kodu"),
   koltukSatinAlmaForm: document.getElementById("koltuk-satin-alma-form"),
   calisanListesi: document.getElementById("calisan-listesi"),
+  bolgeselKayitListesi: document.getElementById("bolgesel-kayit-listesi"),
   uyumOraniGauge: document.getElementById("uyum-orani-gauge"),
   uyumOraniDetay: document.getElementById("uyum-orani-detay"),
   kapanisKanitiForm: document.getElementById("kapanis-kaniti-form"),
@@ -845,6 +846,27 @@ async function loadYoneticiPaneli() {
   } catch (err) {
     els.calisanListesi.innerHTML = `<p class="form-message error">${kacisliMetin(err.message)}</p>`;
   }
+
+  try {
+    const kayitlar = await apiRequest(`/api/otel/${state.otelId}/bolgesel-yuva-kayitlari`);
+    els.bolgeselKayitListesi.innerHTML = kayitlar.length
+      ? kayitlar.map(bolgeselKayitSatiriUret).join("")
+      : '<p class="bos-durum-metin">Bölgede henüz kayıt yok.</p>';
+  } catch (err) {
+    els.bolgeselKayitListesi.innerHTML = `<p class="form-message error">${kacisliMetin(err.message)}</p>`;
+  }
+}
+
+function bolgeselKayitSatiriUret(kayit) {
+  const durumEtiket = DURUM_ETIKET[kayit.durum] || kacisliMetin(kayit.durum);
+  return `
+    <div class="calisan-satir">
+      <span>📍 ${kayit.latitude.toFixed(4)}, ${kayit.longitude.toFixed(4)} — ${kacisliMetin(kayit.tarih)}</span>
+      <span class="rozet rozet-basarili">${durumEtiket}</span>
+      <span>${kacisliMetin(kayit.kaydedenEtiketi)}</span>
+      ${kayit.notlar ? `<span>${kacisliMetin(kayit.notlar)}</span>` : ""}
+    </div>
+  `;
 }
 
 function calisanSatiriUret(calisan) {
