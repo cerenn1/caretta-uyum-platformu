@@ -436,6 +436,8 @@ async function puanDetayiniAc() {
 
     const sertifikaBtn = document.getElementById("katki-sertifikasi-btn");
     if (sertifikaBtn) sertifikaBtn.addEventListener("click", indirKatkiSertifikasi);
+    const siralamaBtn = document.getElementById("siralama-goster-btn");
+    if (siralamaBtn) siralamaBtn.addEventListener("click", siralamayiGoster);
   } catch (err) {
     els.puanDetayIcerik.innerHTML = `<p class="form-message error">${kacisliMetin(err.message)}</p>`;
   }
@@ -508,18 +510,6 @@ function puanDetayHtmlUret(veri) {
     `;
   }
 
-  // odulMesaji backend'de rol/rozet seviyesi FARKETMEKSIZIN ayni, genel/spesifik-olmayan
-  // metin - odul TURU (partner otel indirimi mi, dogrudan maddi odul mu) henuz karara
-  // baglanmadigi icin burada (ya da baska hicbir yerde) yuzde/tutar gibi somut bir
-  // vaat GOSTERILMEZ.
-  if (veri.odulMesaji) {
-    html += `
-      <div class="puan-detay-odul-kutu">
-        🎁 ${kacisliMetin(veri.odulMesaji)}
-      </div>
-    `;
-  }
-
   // Rozet basamakları - kullanıcının ilerlemesinden BAĞIMSIZ, tüm seviyeleri ve
   // eşiklerini baştan gösteren sabit bir referans listesi. Odul metni YOK (yukarida
   // aciklandigi gibi henuz belirlenmedi), sadece hangi seviyenin kac kayit gerektirdigi
@@ -547,9 +537,30 @@ function puanDetayHtmlUret(veri) {
       📄 Katkı Sertifikamı İndir (PDF)
     </button>
     <p class="form-message" data-for="sertifika"></p>
+    <button type="button" id="siralama-goster-btn" class="btn btn-outline-dark puan-detay-sertifika-btn">
+      🏆 Sıralamayı Gör
+    </button>
+    <div id="siralama-icerik"></div>
   `;
 
   return html;
+}
+
+async function siralamayiGoster() {
+  const el = document.getElementById("siralama-icerik");
+  el.innerHTML = "<p>Yükleniyor…</p>";
+  try {
+    const veri = await apiRequest("/api/puan-siralamasi");
+    const satirlar = veri.ilkOnlar
+      .map((s) => `<div class="calisan-satir"><span>#${s.sira} ${kacisliMetin(s.email)}</span><span>${s.toplamPuan} puan</span></div>`)
+      .join("");
+    const kendiSira = veri.kullanicininKendiSirasi
+      ? `<p><strong>Senin sıran:</strong> #${veri.kullanicininKendiSirasi.sira} — ${veri.kullanicininKendiSirasi.toplamPuan} puan</p>`
+      : "";
+    el.innerHTML = satirlar + kendiSira;
+  } catch (err) {
+    el.innerHTML = `<p class="form-message error">${kacisliMetin(err.message)}</p>`;
+  }
 }
 
 function puanDetayiniKapat() {
