@@ -30,6 +30,13 @@ const els = {
   yeniOtelEkleBtn: document.getElementById("yeni-otel-ekle-btn"),
   yeniOtelGirisNotu: document.getElementById("yeni-otel-giris-notu"),
   otelPanelSection: document.getElementById("otel-panel-section"),
+  yoneticiPanelSection: document.getElementById("yonetici-panel-section"),
+  uyelikDurumEtiketi: document.getElementById("uyelik-durum-etiketi"),
+  koltukKullanilan: document.getElementById("koltuk-kullanilan"),
+  koltukSatinAlinan: document.getElementById("koltuk-satin-alinan"),
+  yoneticiDavetKodu: document.getElementById("yonetici-davet-kodu"),
+  koltukSatinAlmaForm: document.getElementById("koltuk-satin-alma-form"),
+  calisanListesi: document.getElementById("calisan-listesi"),
   uyumOraniGauge: document.getElementById("uyum-orani-gauge"),
   uyumOraniDetay: document.getElementById("uyum-orani-detay"),
   kapanisKanitiForm: document.getElementById("kapanis-kaniti-form"),
@@ -108,6 +115,7 @@ function showTab(tab) {
 function updateAuthUI() {
   const loggedIn = Boolean(state.token);
   const otelCalisani = loggedIn && state.role === "OTEL_CALISANI" && state.otelId;
+  const otelYoneticisi = loggedIn && state.role === "OTEL_YONETICISI" && state.otelId;
 
   els.authSection.classList.toggle("hidden", loggedIn);
   els.altSekme.classList.toggle("hidden", !loggedIn);
@@ -121,6 +129,8 @@ function updateAuthUI() {
   els.navLoginBtn.classList.toggle("hidden", loggedIn);
   els.navLogoutBtn.classList.toggle("hidden", !loggedIn);
   els.otelPanelSection.classList.toggle("hidden", !otelCalisani);
+  els.yoneticiPanelSection.classList.toggle("hidden", !otelYoneticisi);
+  if (otelYoneticisi) loadYoneticiPaneli();
   els.userEmailLabel.textContent = state.email ? `Giriş yapan: ${state.email}` : "";
 
   els.yeniOtelEkleBtn.disabled = !loggedIn;
@@ -808,6 +818,75 @@ async function loadUyumOrani(otelId) {
   }
 }
 
+const UYELIK_DURUM_ETIKET = { DENEME: "Deneme", AKTIF: "Aktif", PASIF: "Pasif" };
+
+async function loadYoneticiPaneli() {
+  if (!state.otelId) return;
+  try {
+    const durum = await apiRequest(`/api/otel/${state.otelId}/uyelik-durumu`);
+    const etiket = UYELIK_DURUM_ETIKET[durum.uyelikDurumu] || durum.uyelikDurumu;
+    els.uyelikDurumEtiketi.textContent = durum.premiumMu ? `${etiket} (Premium)` : etiket;
+    els.koltukKullanilan.textContent = durum.kullanilanKoltukSayisi;
+    els.koltukSatinAlinan.textContent = durum.satinAlinanKoltukSayisi;
+    els.yoneticiDavetKodu.textContent = durum.davetKodu || "-";
+  } catch (err) {
+    els.uyelikDurumEtiketi.textContent = "Yüklenemedi";
+  }
+
+  try {
+    const calisanlar = await apiRequest(`/api/otel/${state.otelId}/calisanlar`);
+    els.calisanListesi.innerHTML = calisanlar.length
+      ? calisanlar.map(calisanSatiriUret).join("")
+      : '<p class="bos-durum-metin">Henüz çalışan yok. Davet kodunu paylaşarak çalışan ekleyebilirsin.</p>';
+
+    els.calisanListesi.querySelectorAll("[data-calisan-id]").forEach((btn) => {
+      btn.addEventListener("click", () => calisanDurumunuDegistir(btn.dataset.calisanId, btn.dataset.yeniDurum === "true"));
+    });
+  } catch (err) {
+    els.calisanListesi.innerHTML = `<p class="form-message error">${kacisliMetin(err.message)}</p>`;
+  }
+}
+
+function calisanSatiriUret(calisan) {
+  const durumMetni = calisan.aktif ? "Aktif" : "Pasif";
+  const yeniDurum = !calisan.aktif;
+  const butonMetni = calisan.aktif ? "Pasif Yap" : "Aktif Yap";
+  return `
+    <div class="calisan-satir">
+      <span>${kacisliMetin(calisan.email)}</span>
+      <span class="rozet ${calisan.aktif ? "rozet-basarili" : "rozet-uyari"}">${durumMetni}</span>
+      <button type="button" class="btn btn-outline-dark" data-calisan-id="${calisan.id}" data-yeni-durum="${yeniDurum}">${butonMetni}</button>
+    </div>
+  `;
+}
+
+async function calisanDurumunuDegistir(calisanId, yeniDurum) {
+  try {
+    await apiRequest(`/api/otel/${state.otelId}/calisanlar/${calisanId}/durum`, {
+      method: "PATCH",
+      body: JSON.stringify({ aktif: yeniDurum }),
+    });
+    loadYoneticiPaneli();
+  } catch (err) {
+    setMessage("koltuk-satin-alma", err.message, true);
+  }
+}
+
+els.koltukSatinAlmaForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(els.koltukSatinAlmaForm);
+  try {
+    const sonuc = await apiRequest(`/api/otel/${state.otelId}/koltuk-satin-alma`, {
+      method: "POST",
+      body: JSON.stringify({ koltukSayisi: Number(formData.get("koltukSayisi")) }),
+    });
+    setMessage("koltuk-satin-alma", "Stripe ödeme sayfasına yönlendiriliyorsun…", false);
+    window.location.href = sonuc.checkoutUrl;
+  } catch (err) {
+    setMessage("koltuk-satin-alma", err.message, true);
+  }
+});
+
 els.tabBtns.forEach((btn) => btn.addEventListener("click", () => showTab(btn.dataset.tab)));
 
 els.heroCta.addEventListener("click", () => {
@@ -836,9 +915,9 @@ function girisSonrasiHazirla(data) {
 }
 
 els.registerRole.addEventListener("change", () => {
-  const otelCalisani = els.registerRole.value === "OTEL_CALISANI";
-  els.otelSecimAlani.classList.toggle("hidden", !otelCalisani);
-  if (otelCalisani) loadOtelSecenekleri();
+  const otelGerekli = els.registerRole.value === "OTEL_CALISANI" || els.registerRole.value === "OTEL_YONETICISI";
+  els.otelSecimAlani.classList.toggle("hidden", !otelGerekli);
+  if (otelGerekli) loadOtelSecenekleri();
 });
 
 els.yeniOtelEkleBtn.addEventListener("click", async () => {
@@ -868,16 +947,17 @@ els.registerForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const formData = new FormData(els.registerForm);
   const role = formData.get("role") || "KULLANICI";
-  const otelId = role === "OTEL_CALISANI" ? Number(formData.get("otelId")) || null : null;
-  const otelDavetKodu = role === "OTEL_CALISANI" ? formData.get("otelDavetKodu") || null : null;
+  const otelGerekli = role === "OTEL_CALISANI" || role === "OTEL_YONETICISI";
+  const otelId = otelGerekli ? Number(formData.get("otelId")) || null : null;
+  const otelDavetKodu = otelGerekli ? formData.get("otelDavetKodu") || null : null;
 
-  if (role === "OTEL_CALISANI" && !otelId) {
+  if (otelGerekli && !otelId) {
     setMessage("register", "Lütfen bir otel seçin veya yeni bir otel ekleyin.", true);
     return;
   }
 
-  if (role === "OTEL_CALISANI" && !otelDavetKodu) {
-    setMessage("register", "Otel çalışanı kaydı için davet kodu zorunlu.", true);
+  if (otelGerekli && !otelDavetKodu) {
+    setMessage("register", "Otel çalışanı/yöneticisi kaydı için davet kodu zorunlu.", true);
     return;
   }
 

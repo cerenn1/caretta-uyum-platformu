@@ -1051,3 +1051,7 @@ main {
   .etki-il-grubu { flex-direction: column; gap: 2px; }
   .etki-platform-sayilar { gap: var(--bosluk-3); }
 }
+
+.calisan-satir { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px dashed var(--kum-cizgi, #e0d0ae); flex-wrap: wrap; }
+.calisan-satir > span:first-child { flex: 1; min-width: 160px; }
+.uyelik-durum-alani { margin-bottom: 16px; }

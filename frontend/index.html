@@ -61,6 +61,7 @@
           <select name="role" id="register-role">
             <option value="KULLANICI">Vatandaş / Gözlemci</option>
             <option value="OTEL_CALISANI">Otel Çalışanı</option>
+            <option value="OTEL_YONETICISI">Otel Yöneticisi</option>
           </select>
         </label>
 
@@ -190,6 +191,27 @@
         <button type="submit" class="btn btn-primary">Fotoğrafı Yükle</button>
         <p class="form-message" data-for="kapanis-kaniti"></p>
       </form>
+    </section>
+
+    <section id="yonetici-panel-section" class="card-section hidden">
+      <h2>Otel Yöneticisi Paneli</h2>
+
+      <div class="uyelik-durum-alani">
+        <p><strong>Üyelik durumu:</strong> <span id="uyelik-durum-etiketi">-</span></p>
+        <p><strong>Koltuk:</strong> <span id="koltuk-kullanilan">-</span> / <span id="koltuk-satin-alinan">-</span> kullanılıyor</p>
+        <p><strong>Davet kodu:</strong> <code id="yonetici-davet-kodu">-</code> <span class="form-message" data-for="davet-kopyala"></span></p>
+      </div>
+
+      <form id="koltuk-satin-alma-form">
+        <label>Satın alınacak koltuk sayısı
+          <input type="number" name="koltukSayisi" min="1" max="100" value="1" required>
+        </label>
+        <button type="submit" class="btn btn-primary">Koltuk Satın Al (Stripe test kartı)</button>
+        <p class="form-message" data-for="koltuk-satin-alma"></p>
+      </form>
+
+      <h3>Çalışanlar</h3>
+      <div id="calisan-listesi"></div>
     </section>
   </main>
 
