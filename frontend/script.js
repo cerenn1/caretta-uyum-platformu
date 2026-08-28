@@ -108,6 +108,18 @@ const CEVIRI = {
     "yonetici.calisanlar": "Çalışanlar", "yonetici.bolgeselKayitlar": "Bölgedeki Yuva Kayıtları (7km, herkese ait)",
     "footer.metin": "Kaplumbağa Yuvalama Bölgeleri için Kıyı Turizmi Sürdürülebilirlik Uyum Platformu — MVP Prototip",
     "puan.detayBaslik": "Puan ve Rozet Detayı",
+    "etki.kumsallar.baslik": "🏖️ Resmi Korumalı Yuvalama Kumsalları",
+    "etki.kaynak": "Kaynak",
+    "etki.plaj": "plaj",
+    "etki.maviBayrak.ayrimNotu": "Bu, yukarıdaki yuvalama kumsalı listesinden <strong>ayrı ve farklı bir sertifikadır</strong> — karıştırılmamalıdır.",
+    "etki.platform.baslik": "📊 Platformun Kendi Verisi",
+    "etki.platform.ayrimNotu": "Bu bölüm resmi ulusal veri DEĞİL — platforma girilen gerçek kayıtlardan anlık hesaplanır.",
+    "etki.platform.toplamKayit": "toplam yuva/gözlem kaydı",
+    "etki.platform.aktifOtel": "aktif otel",
+    "etki.platform.bolgeler": "Kayıtlarımızın Bulunduğu Bölgeler",
+    "etki.platform.bolgelerNotu": "Bölgeler, kayıtlı konumlara göre otomatik gruplanır (elle girilmez).",
+    "sekme.anasayfa": "Ana Sayfa", "sekme.kayitlarim": "Kayıtlarım", "sekme.harita": "Harita", "sekme.otelPaneli": "Otel Paneli",
+    "yuva.haritayiGizle": "Haritayı Gizle",
   },
   en: {
     "nav.giris": "Log In", "nav.cikis": "Log Out",
@@ -147,6 +159,18 @@ const CEVIRI = {
     "yonetici.calisanlar": "Staff", "yonetici.bolgeselKayitlar": "Nest Records in Region (7km, everyone's)",
     "footer.metin": "Coastal Tourism Sustainability Compliance Platform for Sea Turtle Nesting Areas — MVP Prototype",
     "puan.detayBaslik": "Points & Badge Details",
+    "etki.kumsallar.baslik": "🏖️ Officially Protected Nesting Beaches",
+    "etki.kaynak": "Source",
+    "etki.plaj": "beaches",
+    "etki.maviBayrak.ayrimNotu": "This is a <strong>separate and different certification</strong> from the nesting beach list above — do not confuse the two.",
+    "etki.platform.baslik": "📊 The Platform's Own Data",
+    "etki.platform.ayrimNotu": "This section is NOT official national data — it is calculated live from real records entered into the platform.",
+    "etki.platform.toplamKayit": "total nest/observation records",
+    "etki.platform.aktifOtel": "active hotels",
+    "etki.platform.bolgeler": "Regions of Our Records",
+    "etki.platform.bolgelerNotu": "Regions are grouped automatically based on recorded locations (not entered manually).",
+    "sekme.anasayfa": "Home", "sekme.kayitlarim": "My Records", "sekme.harita": "Map", "sekme.otelPaneli": "Hotel Panel",
+    "yuva.haritayiGizle": "Hide Map",
   },
 };
 
@@ -177,6 +201,7 @@ function diliUygula(dil) {
   if (state.token) {
     loadPanelOzeti();
     loadYuvaKayitlari();
+    altSekmeleriKur(); // alt sekme etiketleri (Ana Sayfa/Kayitlarim/Harita/Otel Paneli) de yenilensin
   }
   loadKapsamAlani();
 }
@@ -219,6 +244,16 @@ const ETIKET_CEVIRI = {
 function ce(metin) {
   if (state.dil !== "en") return metin;
   return ETIKET_CEVIRI[metin] || metin;
+}
+
+// CEVIRI sozlugunden (asagida tanimli) anahtar bazli metin ceker - dinamik
+// olarak (innerHTML ile) uretilen bolumlerde (Etkimiz karti, alt sekme
+// cubugu vb.) data-i18n ATTRIBUTE'U kullanamadigimiz icin bu yardimciyla
+// dogrudan cagrilir. CEVIRI asagida tanimlanir ama bu fonksiyon SADECE
+// calisma zamaninda (event/async callback icinde) cagrildigi icin sorun
+// olmaz (CEVIRI o ana kadar zaten tanimlanmis olur).
+function t(anahtar) {
+  return (CEVIRI[state.dil] && CEVIRI[state.dil][anahtar]) || CEVIRI.tr[anahtar] || anahtar;
 }
 
 const DURUM_ETIKET = { AKTIF: "Aktif", CIKIS_YAPTI: "Çıkış Yaptı", RISK_ALTINDA: "Risk Altında" };
@@ -424,7 +459,7 @@ function kapsamAlaniHtmlUret(veri) {
     .join("");
 
   const maviBayrakHtml = Object.entries(veri.maviBayrakSayilari)
-    .map(([il, sayi]) => `<span class="etki-mavi-bayrak-satir">${kacisliMetin(il)}: <strong>${sayi}</strong> plaj</span>`)
+    .map(([il, sayi]) => `<span class="etki-mavi-bayrak-satir">${kacisliMetin(il)}: <strong>${sayi}</strong> ${t("etki.plaj")}</span>`)
     .join("");
 
   const bolgeHtml = veri.platformKayitBolgeleri
@@ -439,27 +474,27 @@ function kapsamAlaniHtmlUret(veri) {
 
   return `
     <div class="etki-kutu">
-      <h3 class="etki-kutu-baslik">🏖️ Resmi Korumalı Yuvalama Kumsalları</h3>
+      <h3 class="etki-kutu-baslik">${t("etki.kumsallar.baslik")}</h3>
       <div class="etki-il-listesi">${kumsalHtml}</div>
-      <p class="etki-kaynak-notu">Kaynak: ${kacisliMetin(veri.resmiVeriKaynagi)}</p>
+      <p class="etki-kaynak-notu">${t("etki.kaynak")}: ${kacisliMetin(veri.resmiVeriKaynagi)}</p>
     </div>
 
     <div class="etki-kutu etki-kutu-mavi">
-      <h3 class="etki-kutu-baslik">🚩 ${veri.maviBayrakYili} Mavi Bayrak Sayıları</h3>
-      <p class="etki-ayrim-notu">Bu, yukarıdaki yuvalama kumsalı listesinden <strong>ayrı ve farklı bir sertifikadır</strong> — karıştırılmamalıdır.</p>
+      <h3 class="etki-kutu-baslik">🚩 ${veri.maviBayrakYili} ${state.dil === "en" ? "Blue Flag Counts" : "Mavi Bayrak Sayıları"}</h3>
+      <p class="etki-ayrim-notu">${t("etki.maviBayrak.ayrimNotu")}</p>
       <div class="etki-mavi-bayrak-listesi">${maviBayrakHtml}</div>
-      <p class="etki-kaynak-notu">Kaynak: ${kacisliMetin(veri.maviBayrakKaynagi)}</p>
+      <p class="etki-kaynak-notu">${t("etki.kaynak")}: ${kacisliMetin(veri.maviBayrakKaynagi)}</p>
     </div>
 
     <div class="etki-kutu etki-kutu-platform">
-      <h3 class="etki-kutu-baslik">📊 Platformun Kendi Verisi</h3>
-      <p class="etki-ayrim-notu">Bu bölüm resmi ulusal veri DEĞİL — platforma girilen gerçek kayıtlardan anlık hesaplanır.</p>
+      <h3 class="etki-kutu-baslik">${t("etki.platform.baslik")}</h3>
+      <p class="etki-ayrim-notu">${t("etki.platform.ayrimNotu")}</p>
       <div class="etki-platform-sayilar">
-        <div><span class="etki-platform-buyuk">${veri.platformToplamYuvaKaydiSayisi}</span><span>toplam yuva/gözlem kaydı</span></div>
-        <div><span class="etki-platform-buyuk">${veri.platformAktifOtelSayisi}</span><span>aktif otel</span></div>
+        <div><span class="etki-platform-buyuk">${veri.platformToplamYuvaKaydiSayisi}</span><span>${t("etki.platform.toplamKayit")}</span></div>
+        <div><span class="etki-platform-buyuk">${veri.platformAktifOtelSayisi}</span><span>${t("etki.platform.aktifOtel")}</span></div>
       </div>
-      <h4 class="etki-alt-baslik">Kayıtlarımızın Bulunduğu Bölgeler</h4>
-      <p class="etki-ayrim-notu-kucuk">Bölgeler, kayıtlı konumlara göre otomatik gruplanır (elle girilmez).</p>
+      <h4 class="etki-alt-baslik">${t("etki.platform.bolgeler")}</h4>
+      <p class="etki-ayrim-notu-kucuk">${t("etki.platform.bolgelerNotu")}</p>
       <div class="etki-bolge-listesi">${bolgeHtml}</div>
     </div>
   `;
@@ -893,12 +928,12 @@ function altSekmeleriKur() {
   const otelCalisani = state.role === "OTEL_CALISANI" && Boolean(state.otelId);
 
   const sekmeler = [
-    { hedef: "panel-section", etiket: "Ana Sayfa", ikon: IKON.anasayfa },
-    { hedef: "dashboard-section", etiket: "Kayıtlarım", ikon: IKON.liste },
-    { hedef: "harita-alani", etiket: "Harita", ikon: IKON.harita, haritaAc: true },
+    { hedef: "panel-section", etiket: t("sekme.anasayfa"), ikon: IKON.anasayfa },
+    { hedef: "dashboard-section", etiket: t("sekme.kayitlarim"), ikon: IKON.liste },
+    { hedef: "harita-alani", etiket: t("sekme.harita"), ikon: IKON.harita, haritaAc: true },
   ];
   if (otelCalisani) {
-    sekmeler.push({ hedef: "otel-panel-section", etiket: "Otel Paneli", ikon: IKON.otel });
+    sekmeler.push({ hedef: "otel-panel-section", etiket: t("sekme.otelPaneli"), ikon: IKON.otel });
   }
 
   els.altSekme.innerHTML = sekmeler
@@ -911,7 +946,7 @@ function altSekmeleriKur() {
       // Harita sekmesi: gizliyse once acilir, sonra oraya kaydirilir.
       if (sekme.haritaAc && els.haritaAlani.classList.contains("hidden")) {
         els.haritaAlani.classList.remove("hidden");
-        els.haritaToggleBtn.textContent = "Haritayı Gizle";
+        els.haritaToggleBtn.textContent = t("yuva.haritayiGizle");
         await haritayiDoldur();
       }
       const hedefEl = document.getElementById(sekme.hedef);
@@ -1297,7 +1332,7 @@ els.yuvaForm.addEventListener("submit", async (e) => {
 // Yeni olay dinleyicileri
 els.haritaToggleBtn.addEventListener("click", () => {
   const gizli = els.haritaAlani.classList.toggle("hidden");
-  els.haritaToggleBtn.textContent = gizli ? "Haritada Göster" : "Haritayı Gizle";
+  els.haritaToggleBtn.textContent = gizli ? t("yuva.haritadaGoster") : t("yuva.haritayiGizle");
   if (!gizli) haritayiDoldur();
 });
 
