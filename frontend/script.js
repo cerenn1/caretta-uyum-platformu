@@ -5,6 +5,7 @@ const state = {
   email: localStorage.getItem("caretta_email") || null,
   role: localStorage.getItem("caretta_role") || null,
   otelId: localStorage.getItem("caretta_otel_id") || null,
+  dil: localStorage.getItem("caretta_dil") || "tr",
 };
 
 const els = {
@@ -56,7 +57,133 @@ const els = {
   puanDetayKapatBtn: document.getElementById("puan-detay-kapat-btn"),
   etkiAlaniYukleniyor: document.getElementById("etki-alani-yukleniyor"),
   etkiAlaniIcerik: document.getElementById("etki-alani-icerik"),
+  dilDegistirBtn: document.getElementById("dil-degistir-btn"),
 };
+
+// ---------------------------------------------------------------------------
+// DIL DEGISTIRME (TR/EN) - DEKAMER'in kendi anasayfasindaki gibi tek tikla
+// tum statik metni degistiren bir sozluk tabanli i18n. data-i18n="anahtar"
+// tasiyan HER eleman icin CEVIRI[dil][anahtar] uygulanir. Eleman input/select
+// gibi COCUK ogeler barindirabildigi icin textContent'i TOPTAN degistirmek
+// yerine SADECE ilk metin dugumu (text node) guncellenir - boylece ic ice
+// <input> gibi ogeler SILINMEZ. data-i18n-placeholder ise input/textarea
+// placeholder'ini degistirir.
+// ---------------------------------------------------------------------------
+const CEVIRI = {
+  tr: {
+    "nav.giris": "Giriş Yap", "nav.cikis": "Çıkış Yap",
+    "hero.slogan": "🐢 Fotoğrafını çek, yükle, caretta'ları hayata bağla.",
+    "hero.baslik": "Kaplumbağa Yuvalama Sahillerinde Kıyı Turizmi Uyum Platformu",
+    "hero.paragraf": "Antalya ve çevresindeki caretta caretta yuvalama sahillerinde faaliyet gösteren otellerin yasal koruma yükümlülüklerine (gece 20:00–08:00 sahil giriş yasağı, ışıklandırma kısıtlaması) uyumunu izleyen, sahadaki yuva/gözlem kayıtlarını dijitalleştiren ve denetim/sertifikasyon süreçlerinde kullanılabilecek kanıt üreten bir B2B/B2G platform.",
+    "hero.cta": "Ücretsiz Kayıt Ol",
+    "ozellik.yuva.baslik": "Yuva Kaydı", "ozellik.yuva.aciklama": "Konum, tarih ve fotoğrafla saha gözlemini anında kaydet",
+    "ozellik.harita.baslik": "Harita", "ozellik.harita.aciklama": "Tüm kayıtları haritada gör, bölgesel dağılımı takip et",
+    "ozellik.uyum.baslik": "Uyum Takibi", "ozellik.uyum.aciklama": "Otel kapanış kanıtı ve uyum oranı tek panelde",
+    "ozellik.puan.baslik": "Puan ve Rozet", "ozellik.puan.aciklama": "Katkı sağladıkça puan kazan, sıralamada yüksel",
+    "etki.baslik": "Etkimiz / Kapsam Alanımız", "genel.yukleniyor": "Yükleniyor…", "genel.tekrarDene": "Tekrar Dene",
+    "tab.kayit": "Kayıt Ol", "tab.giris": "Giriş Yap", "kayit.baslik": "Kayıt Ol",
+    "form.email": "Email", "form.sifre": "Şifre", "form.kayitTuru": "Kayıt Türü",
+    "rol.kullanici": "Vatandaş / Gözlemci", "rol.calisan": "Otel Çalışanı", "rol.yonetici": "Otel Yöneticisi",
+    "form.otel": "Otel", "form.otelSec": "Otel seç...", "form.davetKodu": "Otel davet kodu",
+    "form.davetKoduYerTutucu": "Otel size verdiği 8 haneli kodu girin",
+    "form.yeniOtelEkle": "+ Listede yok, yeni otel ekle", "form.otelAdi": "Otel adı",
+    "form.enlem": "Enlem", "form.boylam": "Boylam", "form.oteliKaydet": "Oteli Kaydet",
+    "form.yeniOtelGirisNotu": "Yeni otel eklemek icin once giris yapmalisiniz.",
+    "form.veya": "veya", "form.otelId": "Otel ID", "form.davetKoduKisa": "Davet Kodu", "form.kaydiTamamla": "Kaydı Tamamla",
+    "panel.baslik": "Ana Panel", "panel.yukleniyor": "Panel yükleniyor…",
+    "yuva.baslik": "Yuva / Gözlem Kayıtları", "yuva.konum": "Konum",
+    "yuva.haritaNotu1": "Haritada bir noktaya dokunarak/tıklayarak işaretçiyi yuvanın gerçek konumuna taşı.",
+    "yuva.konumBelirleniyor": "Konum belirleniyor…",
+    "form.tarih": "Tarih", "form.durum": "Durum",
+    "durum.aktif": "Aktif", "durum.cikisYapti": "Çıkış Yaptı", "durum.riskAltinda": "Risk Altında",
+    "form.not": "Not", "form.notYerTutucu": "Gözlem notu (opsiyonel)",
+    "form.fotografOpsiyonel": "Fotoğraf (opsiyonel, JPG/PNG, maks. 10MB)", "form.kaydiEkle": "Kaydı Ekle",
+    "yuva.kayitlarim": "Kayıtlarım", "yuva.haritadaGoster": "Haritada Göster",
+    "yuva.haritaNotu2": "İşaretçiye tıklayınca kaydın tarihi, durumu ve notu görünür.",
+    "otel.panelBaslik": "Otel Kapanış Kanıtı Paneli", "otel.raporIndir": "Uyum Raporu İndir (PDF)",
+    "otel.kapanisKanitiFotograf": "Bugünün kapanış kanıtı fotoğrafı (JPG/PNG, maks. 10MB)", "otel.fotografiYukle": "Fotoğrafı Yükle",
+    "yonetici.panelBaslik": "Otel Yöneticisi Paneli", "yonetici.uyelikDurumu": "Üyelik durumu:",
+    "yonetici.koltuk": "Koltuk:", "yonetici.kullaniliyor": "kullanılıyor", "yonetici.davetKodu": "Davet kodu:",
+    "yonetici.koltukSayisi": "Satın alınacak koltuk sayısı", "yonetici.koltukSatinAl": "Koltuk Satın Al (Stripe test kartı)",
+    "yonetici.calisanlar": "Çalışanlar", "yonetici.bolgeselKayitlar": "Bölgedeki Yuva Kayıtları (7km, herkese ait)",
+    "footer.metin": "Kaplumbağa Yuvalama Bölgeleri için Kıyı Turizmi Sürdürülebilirlik Uyum Platformu — MVP Prototip",
+    "puan.detayBaslik": "Puan ve Rozet Detayı",
+  },
+  en: {
+    "nav.giris": "Log In", "nav.cikis": "Log Out",
+    "hero.slogan": "🐢 Snap it, upload it, keep caretta's alive.",
+    "hero.baslik": "Coastal Tourism Compliance Platform for Sea Turtle Nesting Beaches",
+    "hero.paragraf": "A B2B/B2G platform that monitors hotels' compliance with legal protection rules (no beach access 20:00–08:00, lighting restrictions) on caretta caretta nesting beaches around Antalya, digitizes field nest/observation records, and produces evidence usable in audits and sustainability certification.",
+    "hero.cta": "Sign Up Free",
+    "ozellik.yuva.baslik": "Nest Records", "ozellik.yuva.aciklama": "Log field observations instantly with location, date and photo",
+    "ozellik.harita.baslik": "Map", "ozellik.harita.aciklama": "See all records on the map, track regional distribution",
+    "ozellik.uyum.baslik": "Compliance Tracking", "ozellik.uyum.aciklama": "Hotel closing evidence and compliance rate in one panel",
+    "ozellik.puan.baslik": "Points & Badges", "ozellik.puan.aciklama": "Earn points as you contribute, climb the leaderboard",
+    "etki.baslik": "Our Impact / Coverage Area", "genel.yukleniyor": "Loading…", "genel.tekrarDene": "Try Again",
+    "tab.kayit": "Sign Up", "tab.giris": "Log In", "kayit.baslik": "Sign Up",
+    "form.email": "Email", "form.sifre": "Password", "form.kayitTuru": "Account Type",
+    "rol.kullanici": "Citizen / Observer", "rol.calisan": "Hotel Staff", "rol.yonetici": "Hotel Manager",
+    "form.otel": "Hotel", "form.otelSec": "Select hotel...", "form.davetKodu": "Hotel invite code",
+    "form.davetKoduYerTutucu": "Enter the 8-character code your hotel gave you",
+    "form.yeniOtelEkle": "+ Not listed, add a new hotel", "form.otelAdi": "Hotel name",
+    "form.enlem": "Latitude", "form.boylam": "Longitude", "form.oteliKaydet": "Save Hotel",
+    "form.yeniOtelGirisNotu": "You must log in first to add a new hotel.",
+    "form.veya": "or", "form.otelId": "Hotel ID", "form.davetKoduKisa": "Invite Code", "form.kaydiTamamla": "Complete Sign-up",
+    "panel.baslik": "Dashboard", "panel.yukleniyor": "Loading dashboard…",
+    "yuva.baslik": "Nest / Observation Records", "yuva.konum": "Location",
+    "yuva.haritaNotu1": "Tap/click a point on the map to move the marker to the nest's real location.",
+    "yuva.konumBelirleniyor": "Determining location…",
+    "form.tarih": "Date", "form.durum": "Status",
+    "durum.aktif": "Active", "durum.cikisYapti": "Completed", "durum.riskAltinda": "At Risk",
+    "form.not": "Note", "form.notYerTutucu": "Observation note (optional)",
+    "form.fotografOpsiyonel": "Photo (optional, JPG/PNG, max 10MB)", "form.kaydiEkle": "Add Record",
+    "yuva.kayitlarim": "My Records", "yuva.haritadaGoster": "Show on Map",
+    "yuva.haritaNotu2": "Click the marker to see the record's date, status and note.",
+    "otel.panelBaslik": "Hotel Closing Evidence Panel", "otel.raporIndir": "Download Compliance Report (PDF)",
+    "otel.kapanisKanitiFotograf": "Today's closing evidence photo (JPG/PNG, max 10MB)", "otel.fotografiYukle": "Upload Photo",
+    "yonetici.panelBaslik": "Hotel Manager Panel", "yonetici.uyelikDurumu": "Membership status:",
+    "yonetici.koltuk": "Seats:", "yonetici.kullaniliyor": "in use", "yonetici.davetKodu": "Invite code:",
+    "yonetici.koltukSayisi": "Number of seats to purchase", "yonetici.koltukSatinAl": "Buy Seats (Stripe test card)",
+    "yonetici.calisanlar": "Staff", "yonetici.bolgeselKayitlar": "Nest Records in Region (7km, everyone's)",
+    "footer.metin": "Coastal Tourism Sustainability Compliance Platform for Sea Turtle Nesting Areas — MVP Prototype",
+    "puan.detayBaslik": "Points & Badge Details",
+  },
+};
+
+function diliUygula(dil) {
+  state.dil = dil;
+  localStorage.setItem("caretta_dil", dil);
+  document.documentElement.lang = dil;
+  els.dilDegistirBtn.textContent = dil === "tr" ? "ENGLISH" : "TÜRKÇE";
+
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const metin = CEVIRI[dil][el.dataset.i18n];
+    if (metin === undefined) return;
+    const ilkMetinDugumu = Array.from(el.childNodes).find((n) => n.nodeType === Node.TEXT_NODE);
+    if (ilkMetinDugumu) {
+      ilkMetinDugumu.textContent = metin;
+    } else {
+      el.textContent = metin;
+    }
+  });
+
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    const metin = CEVIRI[dil][el.dataset.i18nPlaceholder];
+    if (metin !== undefined) el.placeholder = metin;
+  });
+
+  // Zaten yuklenmis dinamik icerik varsa (giris yapilmissa) yeniden cek ki
+  // DURUM/ROZET/MEVSIM etiketleri de yeni dilde gorunsun.
+  if (state.token) {
+    loadPanelOzeti();
+    loadYuvaKayitlari();
+  }
+  loadKapsamAlani();
+}
+
+els.dilDegistirBtn.addEventListener("click", () => {
+  diliUygula(state.dil === "tr" ? "en" : "tr");
+});
 
 // Kullanicidan gelen metni (ornegin yuva notu) HTML'e gomerken kacis yapar.
 // Olmazsa not alanina yazilan <script> gibi bir icerik sayfada CALISIR (XSS).
@@ -72,6 +199,27 @@ function kacisliMetin(deger) {
 
 // Backend siniriyla AYNI deger (application.properties: max-file-size=10MB)
 const MAKS_FOTO_BAYT = 10 * 1024 * 1024;
+
+// Dinamik olarak uretilen (backend kod degerlerinden turetilen) Turkce etiketleri,
+// dil Ingilizce ise karsiligina cevirir - veri yapilarina DOKUNMADAN sadece son
+// gorunen metni degistiren kucuk bir yardimci. Bilinmeyen bir metin gelirse
+// (harita disi) oldugu gibi doner, hata vermez.
+const ETIKET_CEVIRI = {
+  "Aktif": "Active",
+  "Çıkış Yaptı": "Completed",
+  "Risk Altında": "At Risk",
+  "🥉 Bronz Rozet": "🥉 Bronze Badge",
+  "🥈 Gümüş Rozet": "🥈 Silver Badge",
+  "🥇 Altın Rozet": "🥇 Gold Badge",
+  "🐢 Yuvalama Sezonu": "🐢 Nesting Season",
+  "Sezon Dışı": "Off Season",
+  "Deneme": "Trial",
+  "Pasif": "Inactive",
+};
+function ce(metin) {
+  if (state.dil !== "en") return metin;
+  return ETIKET_CEVIRI[metin] || metin;
+}
 
 const DURUM_ETIKET = { AKTIF: "Aktif", CIKIS_YAPTI: "Çıkış Yaptı", RISK_ALTINDA: "Risk Altında" };
 const DURUM_RENK = { AKTIF: "#2e7d32", CIKIS_YAPTI: "#1565c0", RISK_ALTINDA: "#c62828" };
@@ -228,7 +376,7 @@ async function loadYuvaKayitlari() {
 }
 
 function renderYuvaCard(kayit) {
-  const durumEtiket = DURUM_ETIKET[kayit.durum] || kacisliMetin(kayit.durum);
+  const durumEtiket = ce(DURUM_ETIKET[kayit.durum] || kacisliMetin(kayit.durum));
   const mevsimEtiket = MEVSIM_ETIKET[kayit.mevsim];
   return `
     <div class="yuva-card durum-${kayit.durum.toLowerCase()}">
@@ -236,7 +384,7 @@ function renderYuvaCard(kayit) {
         <span class="durum-badge">${durumEtiket}</span>
         <span class="tarih">${kacisliMetin(kayit.tarih)}</span>
       </div>
-      ${mevsimEtiket ? `<span class="mevsim-badge mevsim-${mevsimEtiket.sinif}">${mevsimEtiket.etiket}</span>` : ""}
+      ${mevsimEtiket ? `<span class="mevsim-badge mevsim-${mevsimEtiket.sinif}">${ce(mevsimEtiket.etiket)}</span>` : ""}
       <p class="konum">📍 ${kayit.latitude}, ${kayit.longitude}</p>
       ${kayit.notlar ? `<p class="not">${kacisliMetin(kayit.notlar)}</p>` : ""}
     </div>
@@ -381,7 +529,7 @@ function panelHtmlUret(veri) {
       <h3 class="panel-kart-baslik">Puan ve Rozet</h3>
       <p class="panel-sayi">${toplamPuan} <span class="puan-birim">puan</span></p>
       ${rozetBilgi
-        ? `<span class="rozet rozet-${rozetBilgi.sinif}">${rozetBilgi.etiket}</span>`
+        ? `<span class="rozet rozet-${rozetBilgi.sinif}">${ce(rozetBilgi.etiket)}</span>`
         : `<p class="panel-detay">Henüz rozet yok · Bronz rozete ${Math.max(0, 5 - Number(veri.yuvaKayitToplam || 0))} kayıt kaldı</p>`}
       <p class="puan-detay-tikla-notu">Detay için tıkla →</p>
     </article>
@@ -411,7 +559,7 @@ function panelHtmlUret(veri) {
       <h3 class="panel-kart-baslik">Yuva Kayıtları</h3>
       ${kayitVar
         ? `<p class="panel-sayi">${veri.yuvaKayitToplam}</p>
-           <p class="panel-detay">Son kayıt: ${kacisliMetin(veri.sonYuvaKaydiTarih)} · ${DURUM_ETIKET[veri.sonYuvaKaydiDurum] || kacisliMetin(veri.sonYuvaKaydiDurum)}</p>`
+           <p class="panel-detay">Son kayıt: ${kacisliMetin(veri.sonYuvaKaydiTarih)} · ${ce(DURUM_ETIKET[veri.sonYuvaKaydiDurum] || kacisliMetin(veri.sonYuvaKaydiDurum))}</p>`
         : `<p class="bos-durum-metin">Sahada gözlemlediğin yuvaları kaydederek başla.</p>
            <button type="button" id="panel-ilk-kayit-btn" class="btn btn-primary">İlk Kaydını Ekle</button>`}
     </article>
@@ -489,7 +637,7 @@ function puanDetayHtmlUret(veri) {
     <div class="puan-detay-satir">
       <span class="puan-detay-etiket">Mevcut Rozet</span>
       ${mevcutRozetBilgi
-        ? `<span class="rozet rozet-${mevcutRozetBilgi.sinif}">${mevcutRozetBilgi.etiket}</span>`
+        ? `<span class="rozet rozet-${mevcutRozetBilgi.sinif}">${ce(mevcutRozetBilgi.etiket)}</span>`
         : `<span>Henüz yok</span>`}
     </div>
   `;
@@ -498,7 +646,7 @@ function puanDetayHtmlUret(veri) {
     html += `
       <div class="puan-detay-satir">
         <span class="puan-detay-etiket">Sıradaki Rozet</span>
-        <span>${sonrakiRozetBilgi.etiket} için ${veri.sonrakiRozeteKalanKayit} kayıt daha kaldı</span>
+        <span>${ce(sonrakiRozetBilgi.etiket)} için ${veri.sonrakiRozeteKalanKayit} kayıt daha kaldı</span>
       </div>
     `;
   } else {
@@ -520,7 +668,7 @@ function puanDetayHtmlUret(veri) {
     const kazanildiMi = veri.rozet && ["BRONZ", "GUMUS", "ALTIN"].indexOf(veri.rozet) >= ["BRONZ", "GUMUS", "ALTIN"].indexOf(kod);
     html += `
       <div class="puan-detay-basamak ${kazanildiMi ? "kazanildi" : ""}">
-        <span>${kazanildiMi ? "✓" : "•"} ${bilgi.etiket} (${bilgi.esik} kayıt)</span>
+        <span>${kazanildiMi ? "✓" : "•"} ${ce(bilgi.etiket)} (${bilgi.esik} kayıt)</span>
       </div>
     `;
   });
@@ -656,7 +804,7 @@ async function haritayiDoldur() {
     });
     isaretci.bindPopup(
       `<strong>${kacisliMetin(kayit.tarih)}</strong><br>` +
-      `${DURUM_ETIKET[kayit.durum] || kacisliMetin(kayit.durum)}<br>` +
+      `${ce(DURUM_ETIKET[kayit.durum] || kacisliMetin(kayit.durum))}<br>` +
       `<em>${kayit.notlar ? kacisliMetin(kayit.notlar) : "Not yok"}</em>`
     );
     isaretci.addTo(haritaKatmani);
@@ -836,7 +984,7 @@ async function loadYoneticiPaneli() {
   if (!state.otelId) return;
   try {
     const durum = await apiRequest(`/api/otel/${state.otelId}/uyelik-durumu`);
-    const etiket = UYELIK_DURUM_ETIKET[durum.uyelikDurumu] || durum.uyelikDurumu;
+    const etiket = ce(UYELIK_DURUM_ETIKET[durum.uyelikDurumu] || durum.uyelikDurumu);
     els.uyelikDurumEtiketi.textContent = durum.premiumMu ? `${etiket} (Premium)` : etiket;
     els.koltukKullanilan.textContent = durum.kullanilanKoltukSayisi;
     els.koltukSatinAlinan.textContent = durum.satinAlinanKoltukSayisi;
@@ -869,7 +1017,7 @@ async function loadYoneticiPaneli() {
 }
 
 function bolgeselKayitSatiriUret(kayit) {
-  const durumEtiket = DURUM_ETIKET[kayit.durum] || kacisliMetin(kayit.durum);
+  const durumEtiket = ce(DURUM_ETIKET[kayit.durum] || kacisliMetin(kayit.durum));
   return `
     <div class="calisan-satir">
       <span>📍 ${kayit.latitude.toFixed(4)}, ${kayit.longitude.toFixed(4)} — ${kacisliMetin(kayit.tarih)}</span>
@@ -1156,6 +1304,11 @@ els.haritaToggleBtn.addEventListener("click", () => {
 els.raporIndirBtn.addEventListener("click", indirUyumRaporu);
 els.panelTekrarBtn.addEventListener("click", loadPanelOzeti);
 
+// Sayfa lang="tr" ile yazildigi icin ilk uygulamada data-i18n elemanlari zaten
+// dogru Turkce metni tasiyor - ama kullanici daha once Ingilizce secmisse
+// (localStorage'da kayitliysa) sayfa acilir acilmaz Ingilizceye gecsin diye
+// yine de cagrilir; diliUygula kendi ic yukleme cagrilarini yapar.
+diliUygula(state.dil);
 updateAuthUI();
 loadKapsamAlani(); // herkese acik, giris durumundan BAGIMSIZ her zaman yuklenir
 if (state.token) {

@@ -13,26 +13,27 @@
     <nav class="navbar">
       <span class="logo">🐢 Caretta Uyum</span>
       <div class="nav-actions">
-        <button id="nav-login-btn" class="btn btn-outline">Giriş Yap</button>
-        <button id="nav-logout-btn" class="btn btn-outline hidden">Çıkış Yap</button>
+        <button id="dil-degistir-btn" class="btn btn-outline" type="button">ENGLISH</button>
+        <button id="nav-login-btn" class="btn btn-outline" data-i18n="nav.giris">Giriş Yap</button>
+        <button id="nav-logout-btn" class="btn btn-outline hidden" data-i18n="nav.cikis">Çıkış Yap</button>
       </div>
     </nav>
     <div class="hero-content">
-      <p class="hero-slogan">🐢 Fotoğrafını çek, yükle, caretta'ları hayata bağla.</p>
-      <h1>Kaplumbağa Yuvalama Sahillerinde Kıyı Turizmi Uyum Platformu</h1>
-      <p>
+      <p class="hero-slogan" data-i18n="hero.slogan">🐢 Fotoğrafını çek, yükle, caretta'ları hayata bağla.</p>
+      <h1 data-i18n="hero.baslik">Kaplumbağa Yuvalama Sahillerinde Kıyı Turizmi Uyum Platformu</h1>
+      <p data-i18n="hero.paragraf">
         Antalya ve çevresindeki caretta caretta yuvalama sahillerinde faaliyet gösteren otellerin
         yasal koruma yükümlülüklerine (gece 20:00–08:00 sahil giriş yasağı, ışıklandırma kısıtlaması)
         uyumunu izleyen, sahadaki yuva/gözlem kayıtlarını dijitalleştiren ve denetim/sertifikasyon
         süreçlerinde kullanılabilecek kanıt üreten bir B2B/B2G platform.
       </p>
-      <button id="hero-cta" class="btn btn-primary">Ücretsiz Kayıt Ol</button>
+      <button id="hero-cta" class="btn btn-primary" data-i18n="hero.cta">Ücretsiz Kayıt Ol</button>
 
       <div class="ozellik-listesi">
-        <div class="ozellik-kart">📍 <strong>Yuva Kaydı</strong><span>Konum, tarih ve fotoğrafla saha gözlemini anında kaydet</span></div>
-        <div class="ozellik-kart">🗺️ <strong>Harita</strong><span>Tüm kayıtları haritada gör, bölgesel dağılımı takip et</span></div>
-        <div class="ozellik-kart">✅ <strong>Uyum Takibi</strong><span>Otel kapanış kanıtı ve uyum oranı tek panelde</span></div>
-        <div class="ozellik-kart">🏆 <strong>Puan ve Rozet</strong><span>Katkı sağladıkça puan kazan, sıralamada yüksel</span></div>
+        <div class="ozellik-kart">📍 <strong data-i18n="ozellik.yuva.baslik">Yuva Kaydı</strong><span data-i18n="ozellik.yuva.aciklama">Konum, tarih ve fotoğrafla saha gözlemini anında kaydet</span></div>
+        <div class="ozellik-kart">🗺️ <strong data-i18n="ozellik.harita.baslik">Harita</strong><span data-i18n="ozellik.harita.aciklama">Tüm kayıtları haritada gör, bölgesel dağılımı takip et</span></div>
+        <div class="ozellik-kart">✅ <strong data-i18n="ozellik.uyum.baslik">Uyum Takibi</strong><span data-i18n="ozellik.uyum.aciklama">Otel kapanış kanıtı ve uyum oranı tek panelde</span></div>
+        <div class="ozellik-kart">🏆 <strong data-i18n="ozellik.puan.baslik">Puan ve Rozet</strong><span data-i18n="ozellik.puan.aciklama">Katkı sağladıkça puan kazan, sıralamada yüksel</span></div>
       </div>
     </div>
   </header>
@@ -45,91 +46,91 @@
          KARISTIRILMAZ. -->
     <section id="etki-alani-section" class="card-section">
       <div class="dashboard-header">
-        <h2>Etkimiz / Kapsam Alanımız</h2>
+        <h2 data-i18n="etki.baslik">Etkimiz / Kapsam Alanımız</h2>
       </div>
-      <div id="etki-alani-yukleniyor" class="panel-durum">Yükleniyor…</div>
+      <div id="etki-alani-yukleniyor" class="panel-durum" data-i18n="genel.yukleniyor">Yükleniyor…</div>
       <div id="etki-alani-icerik" class="hidden"></div>
     </section>
 
     <section id="auth-section" class="card-section">
       <div class="tabs">
-        <button class="tab-btn active" data-tab="register" type="button">Kayıt Ol</button>
-        <button class="tab-btn" data-tab="login" type="button">Giriş Yap</button>
+        <button class="tab-btn active" data-tab="register" type="button" data-i18n="tab.kayit">Kayıt Ol</button>
+        <button class="tab-btn" data-tab="login" type="button" data-i18n="tab.giris">Giriş Yap</button>
       </div>
 
       <form id="register-form" class="auth-form">
-        <h2>Kayıt Ol</h2>
-        <label>Email
+        <h2 data-i18n="kayit.baslik">Kayıt Ol</h2>
+        <label data-i18n="form.email">Email
           <input type="email" name="email" required>
         </label>
-        <label>Şifre
+        <label data-i18n="form.sifre">Şifre
           <input type="password" name="password" minlength="8" required>
         </label>
-        <label>Kayıt Türü
+        <label data-i18n="form.kayitTuru">Kayıt Türü
           <select name="role" id="register-role">
-            <option value="KULLANICI">Vatandaş / Gözlemci</option>
-            <option value="OTEL_CALISANI">Otel Çalışanı</option>
-            <option value="OTEL_YONETICISI">Otel Yöneticisi</option>
+            <option value="KULLANICI" data-i18n="rol.kullanici">Vatandaş / Gözlemci</option>
+            <option value="OTEL_CALISANI" data-i18n="rol.calisan">Otel Çalışanı</option>
+            <option value="OTEL_YONETICISI" data-i18n="rol.yonetici">Otel Yöneticisi</option>
           </select>
         </label>
 
         <div id="otel-secim-alani" class="hidden">
-          <label>Otel
+          <label data-i18n="form.otel">Otel
             <select name="otelId" id="otel-select">
-              <option value="">Otel seç...</option>
+              <option value="" data-i18n="form.otelSec">Otel seç...</option>
             </select>
           </label>
-          <label>Otel davet kodu
-            <input type="text" name="otelDavetKodu" id="otel-davet-kodu" placeholder="Otel size verdiği 8 haneli kodu girin">
+          <label data-i18n="form.davetKodu">Otel davet kodu
+            <input type="text" name="otelDavetKodu" id="otel-davet-kodu" placeholder="Otel size verdiği 8 haneli kodu girin" data-i18n-placeholder="form.davetKoduYerTutucu">
           </label>
           <details class="yeni-otel-details">
-            <summary>+ Listede yok, yeni otel ekle</summary>
+            <summary data-i18n="form.yeniOtelEkle">+ Listede yok, yeni otel ekle</summary>
             <div class="form-row">
-              <label>Otel adı
+              <label data-i18n="form.otelAdi">Otel adı
                 <input type="text" id="yeni-otel-ad" disabled>
               </label>
             </div>
             <div class="form-row">
-              <label>Enlem
+              <label data-i18n="form.enlem">Enlem
                 <input type="number" step="any" id="yeni-otel-lat" disabled>
               </label>
-              <label>Boylam
+              <label data-i18n="form.boylam">Boylam
                 <input type="number" step="any" id="yeni-otel-lng" disabled>
               </label>
             </div>
-            <button type="button" id="yeni-otel-ekle-btn" class="btn btn-outline-dark" disabled>Oteli Kaydet</button>
-            <p id="yeni-otel-giris-notu" class="form-message">Yeni otel eklemek icin once giris yapmalisiniz.</p>
+            <button type="button" id="yeni-otel-ekle-btn" class="btn btn-outline-dark" disabled data-i18n="form.oteliKaydet">Oteli Kaydet</button>
+            <p id="yeni-otel-giris-notu" class="form-message" data-i18n="form.yeniOtelGirisNotu">Yeni otel eklemek icin once giris yapmalisiniz.</p>
             <p class="form-message" data-for="yeni-otel"></p>
           </details>
         </div>
 
-        <button type="submit" class="btn btn-primary">Kayıt Ol</button>
+        <button type="submit" class="btn btn-primary" data-i18n="tab.kayit">Kayıt Ol</button>
         <p class="form-message" data-for="register"></p>
       </form>
 
       <form id="login-form" class="auth-form hidden">
-        <h2>Giriş Yap</h2>
-        <label>Email
+        <h2 data-i18n="tab.giris">Giriş Yap</h2>
+        <label data-i18n="form.email">Email
           <input type="email" name="email" required>
         </label>
-        <label>Şifre
+        <label data-i18n="form.sifre">Şifre
           <input type="password" name="password" required>
         </label>
-        <button type="submit" class="btn btn-primary">Giriş Yap</button>
+        <button type="submit" class="btn btn-primary" data-i18n="tab.giris">Giriş Yap</button>
         <p class="form-message" data-for="login"></p>
-        <div class="google-giris-ayirici">veya</div>
+        <div class="google-giris-ayirici" data-i18n="form.veya">veya</div>
         <div id="google-giris-alani"></div>
         <div id="google-rol-secim-alani" class="hidden">
           <label>Kayıt Türü
             <select id="google-rol-select">
-              <option value="KULLANICI">Vatandaş / Gözlemci</option>
-              <option value="OTEL_CALISANI">Otel Çalışanı</option>
-              <option value="OTEL_YONETICISI">Otel Yöneticisi</option>
+              <option value="KULLANICI" data-i18n="rol.kullanici">Vatandaş / Gözlemci</option>
+              <option value="OTEL_CALISANI" data-i18n="rol.calisan">Otel Çalışanı</option>
+              <option value="OTEL_YONETICISI" data-i18n="rol.yonetici">Otel Yöneticisi</option>
             </select>
           </label>
-          <label>Otel ID<input type="number" id="google-otel-id"></label>
-          <label>Davet Kodu<input type="text" id="google-davet-kodu"></label>
-          <button type="button" id="google-tamamla-btn" class="btn btn-primary">Kaydı Tamamla</button>
+          <label data-i18n="form.otelId">Otel ID<input type="number" id="google-otel-id"></label>
+          <label data-i18n="form.davetKoduKisa">Davet Kodu<input type="text" id="google-davet-kodu"></label>
+          <button type="button" id="google-tamamla-btn" class="btn btn-primary" data-i18n="form.kaydiTamamla">Kaydı Tamamla</button>
         </div>
         <p class="form-message" data-for="google"></p>
       </form>
@@ -139,66 +140,66 @@
          normal kullanici icin DOM'a HIC eklenmez (sadece CSS ile gizlenmez). -->
     <section id="panel-section" class="card-section hidden">
       <div class="dashboard-header">
-        <h2>Ana Panel</h2>
+        <h2 data-i18n="panel.baslik">Ana Panel</h2>
         <span id="user-email-label"></span>
       </div>
-      <div id="panel-yukleniyor" class="panel-durum">Panel yükleniyor…</div>
+      <div id="panel-yukleniyor" class="panel-durum" data-i18n="panel.yukleniyor">Panel yükleniyor…</div>
       <div id="panel-hata" class="panel-durum hidden">
         <p id="panel-hata-mesaj" class="form-message error"></p>
-        <button type="button" id="panel-tekrar-btn" class="btn btn-outline-dark">Tekrar Dene</button>
+        <button type="button" id="panel-tekrar-btn" class="btn btn-outline-dark" data-i18n="genel.tekrarDene">Tekrar Dene</button>
       </div>
       <div id="panel-icerik" class="panel-kartlar hidden"></div>
     </section>
 
     <section id="dashboard-section" class="card-section hidden">
       <div class="dashboard-header">
-        <h2>Yuva / Gözlem Kayıtları</h2>
+        <h2 data-i18n="yuva.baslik">Yuva / Gözlem Kayıtları</h2>
       </div>
 
       <form id="yuva-form" class="yuva-form">
         <div class="konum-secici-blok">
-          <p class="konum-secici-baslik">Konum</p>
+          <p class="konum-secici-baslik" data-i18n="yuva.konum">Konum</p>
           <div id="konum-secici-harita"></div>
-          <p class="harita-notu">Haritada bir noktaya dokunarak/tıklayarak işaretçiyi yuvanın gerçek konumuna taşı.</p>
-          <p class="konum-secili-deger" id="konum-secili-deger">Konum belirleniyor…</p>
+          <p class="harita-notu" data-i18n="yuva.haritaNotu1">Haritada bir noktaya dokunarak/tıklayarak işaretçiyi yuvanın gerçek konumuna taşı.</p>
+          <p class="konum-secili-deger" id="konum-secili-deger" data-i18n="yuva.konumBelirleniyor">Konum belirleniyor…</p>
         </div>
         <div class="form-row">
-          <label>Tarih
+          <label data-i18n="form.tarih">Tarih
             <input type="date" name="tarih" required>
           </label>
-          <label>Durum
+          <label data-i18n="form.durum">Durum
             <select name="durum" required>
-              <option value="AKTIF">Aktif</option>
-              <option value="CIKIS_YAPTI">Çıkış Yaptı</option>
-              <option value="RISK_ALTINDA">Risk Altında</option>
+              <option value="AKTIF" data-i18n="durum.aktif">Aktif</option>
+              <option value="CIKIS_YAPTI" data-i18n="durum.cikisYapti">Çıkış Yaptı</option>
+              <option value="RISK_ALTINDA" data-i18n="durum.riskAltinda">Risk Altında</option>
             </select>
           </label>
         </div>
-        <label>Not
-          <textarea name="notlar" rows="2" placeholder="Gözlem notu (opsiyonel)"></textarea>
+        <label data-i18n="form.not">Not
+          <textarea name="notlar" rows="2" placeholder="Gözlem notu (opsiyonel)" data-i18n-placeholder="form.notYerTutucu"></textarea>
         </label>
-        <label>Fotoğraf (opsiyonel, JPG/PNG, maks. 10MB)
+        <label data-i18n="form.fotografOpsiyonel">Fotoğraf (opsiyonel, JPG/PNG, maks. 10MB)
           <input type="file" name="fotograf" accept="image/jpeg,image/png" capture="environment">
         </label>
-        <button type="submit" class="btn btn-primary">Kaydı Ekle</button>
+        <button type="submit" class="btn btn-primary" data-i18n="form.kaydiEkle">Kaydı Ekle</button>
         <p class="form-message" data-for="yuva"></p>
       </form>
 
       <div class="liste-basligi">
-        <h3>Kayıtlarım</h3>
-        <button type="button" id="harita-toggle-btn" class="btn btn-outline-dark">Haritada Göster</button>
+        <h3 data-i18n="yuva.kayitlarim">Kayıtlarım</h3>
+        <button type="button" id="harita-toggle-btn" class="btn btn-outline-dark" data-i18n="yuva.haritadaGoster">Haritada Göster</button>
       </div>
 
       <div id="harita-alani" class="hidden">
         <div id="harita"></div>
-        <p class="harita-notu">İşaretçiye tıklayınca kaydın tarihi, durumu ve notu görünür.</p>
+        <p class="harita-notu" data-i18n="yuva.haritaNotu2">İşaretçiye tıklayınca kaydın tarihi, durumu ve notu görünür.</p>
       </div>
 
       <div id="yuva-list"></div>
     </section>
 
     <section id="otel-panel-section" class="card-section hidden">
-      <h2>Otel Kapanış Kanıtı Paneli</h2>
+      <h2 data-i18n="otel.panelBaslik">Otel Kapanış Kanıtı Paneli</h2>
 
       <div class="uyum-orani-alani">
         <div class="gauge-circle" id="uyum-orani-gauge">--%</div>
@@ -206,46 +207,46 @@
       </div>
 
       <div class="rapor-alani">
-        <button type="button" id="rapor-indir-btn" class="btn btn-primary">Uyum Raporu İndir (PDF)</button>
+        <button type="button" id="rapor-indir-btn" class="btn btn-primary" data-i18n="otel.raporIndir">Uyum Raporu İndir (PDF)</button>
         <p class="form-message" data-for="rapor"></p>
       </div>
 
       <form id="kapanis-kaniti-form">
-        <label>Bugünün kapanış kanıtı fotoğrafı (JPG/PNG, maks. 10MB)
+        <label data-i18n="otel.kapanisKanitiFotograf">Bugünün kapanış kanıtı fotoğrafı (JPG/PNG, maks. 10MB)
           <input type="file" name="fotograf" accept="image/jpeg,image/png" required>
         </label>
-        <button type="submit" class="btn btn-primary">Fotoğrafı Yükle</button>
+        <button type="submit" class="btn btn-primary" data-i18n="otel.fotografiYukle">Fotoğrafı Yükle</button>
         <p class="form-message" data-for="kapanis-kaniti"></p>
       </form>
     </section>
 
     <section id="yonetici-panel-section" class="card-section hidden">
-      <h2>Otel Yöneticisi Paneli</h2>
+      <h2 data-i18n="yonetici.panelBaslik">Otel Yöneticisi Paneli</h2>
 
       <div class="uyelik-durum-alani">
-        <p><strong>Üyelik durumu:</strong> <span id="uyelik-durum-etiketi">-</span></p>
-        <p><strong>Koltuk:</strong> <span id="koltuk-kullanilan">-</span> / <span id="koltuk-satin-alinan">-</span> kullanılıyor</p>
-        <p><strong>Davet kodu:</strong> <code id="yonetici-davet-kodu">-</code> <span class="form-message" data-for="davet-kopyala"></span></p>
+        <p><strong data-i18n="yonetici.uyelikDurumu">Üyelik durumu:</strong> <span id="uyelik-durum-etiketi">-</span></p>
+        <p><strong data-i18n="yonetici.koltuk">Koltuk:</strong> <span id="koltuk-kullanilan">-</span> / <span id="koltuk-satin-alinan">-</span> <span data-i18n="yonetici.kullaniliyor">kullanılıyor</span></p>
+        <p><strong data-i18n="yonetici.davetKodu">Davet kodu:</strong> <code id="yonetici-davet-kodu">-</code> <span class="form-message" data-for="davet-kopyala"></span></p>
       </div>
 
       <form id="koltuk-satin-alma-form">
-        <label>Satın alınacak koltuk sayısı
+        <label data-i18n="yonetici.koltukSayisi">Satın alınacak koltuk sayısı
           <input type="number" name="koltukSayisi" min="1" max="100" value="1" required>
         </label>
-        <button type="submit" class="btn btn-primary">Koltuk Satın Al (Stripe test kartı)</button>
+        <button type="submit" class="btn btn-primary" data-i18n="yonetici.koltukSatinAl">Koltuk Satın Al (Stripe test kartı)</button>
         <p class="form-message" data-for="koltuk-satin-alma"></p>
       </form>
 
-      <h3>Çalışanlar</h3>
+      <h3 data-i18n="yonetici.calisanlar">Çalışanlar</h3>
       <div id="calisan-listesi"></div>
 
-      <h3>Bölgedeki Yuva Kayıtları (7km, herkese ait)</h3>
+      <h3 data-i18n="yonetici.bolgeselKayitlar">Bölgedeki Yuva Kayıtları (7km, herkese ait)</h3>
       <div id="bolgesel-kayit-listesi"></div>
     </section>
   </main>
 
   <footer>
-    <p>Kaplumbağa Yuvalama Bölgeleri için Kıyı Turizmi Sürdürülebilirlik Uyum Platformu — MVP Prototip</p>
+    <p data-i18n="footer.metin">Kaplumbağa Yuvalama Bölgeleri için Kıyı Turizmi Sürdürülebilirlik Uyum Platformu — MVP Prototip</p>
   </footer>
 
   <!-- Alt sekme cubugu: sekmeler role gore JS tarafindan uretilir.
@@ -256,7 +257,7 @@
   <div id="puan-detay-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="puan-detay-baslik">
     <div class="modal-kutu">
       <button type="button" id="puan-detay-kapat-btn" class="modal-kapat-btn" aria-label="Kapat">&times;</button>
-      <h3 id="puan-detay-baslik">Puan ve Rozet Detayı</h3>
+      <h3 id="puan-detay-baslik" data-i18n="puan.detayBaslik">Puan ve Rozet Detayı</h3>
       <div id="puan-detay-icerik"></div>
     </div>
   </div>
