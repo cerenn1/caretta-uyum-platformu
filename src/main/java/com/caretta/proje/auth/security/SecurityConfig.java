@@ -71,6 +71,10 @@ public class SecurityConfig {
                         // Demo amacli manuel premium isaretleme araci - JWT GEREKTIRMEZ, kendi
                         // guvenligini paylasilan X-Admin-Key basligi saglar (bkz. UyelikService).
                         .requestMatchers(HttpMethod.POST, "/api/admin/otel/*/premium-durum").permitAll()
+                        // Ayni demo-arac gerekcesi (bkz. UyelikService): JWT GEREKTIRMEZ, kendi
+                        // guvenligini X-Admin-Key basligi saglar.
+                        .requestMatchers(HttpMethod.POST, "/api/admin/otel/*/koltuk-sayisi").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/admin/otel/*/kapanis-kaniti-doldur").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

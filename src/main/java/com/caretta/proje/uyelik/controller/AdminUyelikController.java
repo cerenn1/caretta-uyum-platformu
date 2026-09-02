@@ -1,7 +1,11 @@
 package com.caretta.proje.uyelik.controller;
 
+import com.caretta.proje.uyelik.dto.KapanisKanitiDoldurmaRequest;
+import com.caretta.proje.uyelik.dto.KapanisKanitiDoldurmaResponse;
+import com.caretta.proje.uyelik.dto.KoltukSayisiAyarlaRequest;
 import com.caretta.proje.uyelik.dto.PremiumDurumRequest;
 import com.caretta.proje.uyelik.service.UyelikService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,5 +36,28 @@ public class AdminUyelikController {
                                                      @RequestHeader(value = "X-Admin-Key", required = false) String adminKey) {
         uyelikService.premiumDurumAyarla(id, body.premium(), adminKey);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * DEMO/SUNUM ARACI - premium-durum ile AYNI gerekce: Stripe koltuk satin alma
+     * akisini BYPASS edip koltuk sayisini dogrudan ayarlar (bkz. UyelikService).
+     */
+    @PostMapping("/api/admin/otel/{id}/koltuk-sayisi")
+    public ResponseEntity<Void> koltukSayisiAyarla(@PathVariable("id") Long id,
+                                                     @Valid @RequestBody KoltukSayisiAyarlaRequest body,
+                                                     @RequestHeader(value = "X-Admin-Key", required = false) String adminKey) {
+        uyelikService.koltukSayisiAyarla(id, body.satinAlinanKoltukSayisi(), adminKey);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * DEMO/SUNUM ARACI - gercek dosya YAZMADAN, gecmise donuk sabit placeholder'li
+     * kapanis kaniti kayitlari olusturur (bkz. UyelikService#kapanisKanitiDoldur).
+     */
+    @PostMapping("/api/admin/otel/{id}/kapanis-kaniti-doldur")
+    public ResponseEntity<KapanisKanitiDoldurmaResponse> kapanisKanitiDoldur(@PathVariable("id") Long id,
+                                                                               @Valid @RequestBody KapanisKanitiDoldurmaRequest body,
+                                                                               @RequestHeader(value = "X-Admin-Key", required = false) String adminKey) {
+        return ResponseEntity.ok(uyelikService.kapanisKanitiDoldur(id, body.gunSayisi(), adminKey));
     }
 }

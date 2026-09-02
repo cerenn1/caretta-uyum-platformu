@@ -230,6 +230,93 @@ class UyelikIntegrationTest {
                 .andExpect(status().isNoContent());
     }
 
+    // ---------- POST /api/admin/otel/{id}/koltuk-sayisi ----------
+
+    @Test
+    void adminKoltukSayisi_eksikAnahtarla403Doner() throws Exception {
+        mockMvc.perform(post("/api/admin/otel/{id}/koltuk-sayisi", otelA.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"satinAlinanKoltukSayisi\":10}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminKoltukSayisi_yanlisAnahtarla403Doner() throws Exception {
+        mockMvc.perform(post("/api/admin/otel/{id}/koltuk-sayisi", otelA.getId())
+                        .header("X-Admin-Key", "bu-kesinlikle-yanlis-bir-anahtar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"satinAlinanKoltukSayisi\":10}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminKoltukSayisi_dogruAnahtarlaGuncellenirVeUyelikDurumundaGorunur() throws Exception {
+        mockMvc.perform(post("/api/admin/otel/{id}/koltuk-sayisi", otelA.getId())
+                        .header("X-Admin-Key", ADMIN_KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"satinAlinanKoltukSayisi\":42}"))
+                .andExpect(status().isNoContent());
+
+        String otelATokeni = otelCalisaniKaydolVeTokenAl(otelA);
+
+        mockMvc.perform(get("/api/otel/{id}/uyelik-durumu", otelA.getId())
+                        .header("Authorization", "Bearer " + otelATokeni))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.satinAlinanKoltukSayisi").value(42));
+    }
+
+    // ---------- POST /api/admin/otel/{id}/kapanis-kaniti-doldur ----------
+
+    @Test
+    void adminKapanisKanitiDoldur_eksikAnahtarla403Doner() throws Exception {
+        mockMvc.perform(post("/api/admin/otel/{id}/kapanis-kaniti-doldur", otelA.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"gunSayisi\":5}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminKapanisKanitiDoldur_yanlisAnahtarla403Doner() throws Exception {
+        mockMvc.perform(post("/api/admin/otel/{id}/kapanis-kaniti-doldur", otelA.getId())
+                        .header("X-Admin-Key", "bu-kesinlikle-yanlis-bir-anahtar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"gunSayisi\":5}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminKapanisKanitiDoldur_calisaniOlmayanOtelde400Doner() throws Exception {
+        // otelA'ya henuz hicbir OTEL_CALISANI/OTEL_YONETICISI kaydolmadi.
+        mockMvc.perform(post("/api/admin/otel/{id}/kapanis-kaniti-doldur", otelA.getId())
+                        .header("X-Admin-Key", ADMIN_KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"gunSayisi\":5}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void adminKapanisKanitiDoldur_dogruAnahtarlaIdempotentDoldurur() throws Exception {
+        otelCalisaniKaydolVeTokenAl(otelA);
+
+        mockMvc.perform(post("/api/admin/otel/{id}/kapanis-kaniti-doldur", otelA.getId())
+                        .header("X-Admin-Key", ADMIN_KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"gunSayisi\":5}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.eklenenGunSayisi").value(5))
+                .andExpect(jsonPath("$.atlananGunSayisi").value(0));
+
+        // Ayni cagriyi tekrarla - unique constraint (otel_id, tarih) sayesinde
+        // ikinci cagrida hicbir yeni kayit EKLENMEMELI (idempotent).
+        mockMvc.perform(post("/api/admin/otel/{id}/kapanis-kaniti-doldur", otelA.getId())
+                        .header("X-Admin-Key", ADMIN_KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"gunSayisi\":5}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.eklenenGunSayisi").value(0))
+                .andExpect(jsonPath("$.atlananGunSayisi").value(5));
+    }
+
     // ---------- POST /api/stripe/webhook ----------
 
     @Test
