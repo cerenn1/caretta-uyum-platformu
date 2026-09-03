@@ -541,8 +541,10 @@ async function loadPanelOzeti() {
   }
 }
 
+const ROL_ETIKET_ANAHTARI = { OTEL_CALISANI: "rol.calisan", OTEL_YONETICISI: "rol.yonetici" };
+
 function panelHtmlUret(veri) {
-  const rolEtiket = veri.role === "OTEL_CALISANI" ? "Otel Çalışanı" : "Kullanıcı";
+  const rolEtiket = t(ROL_ETIKET_ANAHTARI[veri.role] || "rol.kullanici");
   const otelCalisani = veri.role === "OTEL_CALISANI" && veri.otelId !== null && veri.otelId !== undefined;
 
   let html = `
@@ -1130,7 +1132,13 @@ const GOOGLE_CLIENT_ID = "BURAYA-GERCEK-GOOGLE-CLIENT-ID-YAZILACAK.apps.googleus
 let sonGoogleIdToken = null;
 
 function googleGirisiniBaslat() {
-  if (!window.google || GOOGLE_CLIENT_ID.includes("BURAYA-GERCEK")) return; // henuz yapilandirilmadi
+  if (!window.google || GOOGLE_CLIENT_ID.includes("BURAYA-GERCEK")) {
+    // Henuz yapilandirilmadi: buton hic gorunmeyecegi icin bos "veya" ayiricisini
+    // ve etrafindaki bosluga sebep olan konteyneri de gizle.
+    document.querySelector(".google-giris-ayirici")?.classList.add("hidden");
+    document.getElementById("google-giris-alani")?.classList.add("hidden");
+    return;
+  }
   google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: googleGirisCallback });
   google.accounts.id.renderButton(document.getElementById("google-giris-alani"), { theme: "outline", size: "large" });
 }
