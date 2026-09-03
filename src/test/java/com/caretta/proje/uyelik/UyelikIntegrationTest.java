@@ -99,6 +99,22 @@ class UyelikIntegrationTest {
         return json.get("token").asText();
     }
 
+    private String otelYoneticisiKaydolVeTokenAl(Otel otel) throws Exception {
+        String email = "yonetici_" + UUID.randomUUID() + "@example.com";
+        String body = """
+                {"email":"%s","password":"password123","role":"OTEL_YONETICISI","otelId":%d,"otelDavetKodu":"%s"}
+                """.formatted(email, otel.getId(), otel.getDavetKodu());
+
+        MvcResult result = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        JsonNode json = objectMapper.readTree(result.getResponse().getContentAsString());
+        return json.get("token").asText();
+    }
+
     private String normalKullaniciKaydolVeTokenAl() throws Exception {
         String email = "kullanici_" + UUID.randomUUID() + "@example.com";
         String body = """
@@ -118,11 +134,24 @@ class UyelikIntegrationTest {
     // ---------- POST /api/otel/{id}/koltuk-satin-alma ----------
 
     @Test
-    void koltukSatinAlma_baskaOtelinCalisaniIle403Doner() throws Exception {
-        String otelATokeni = otelCalisaniKaydolVeTokenAl(otelA);
+    void koltukSatinAlma_baskaOtelinYoneticisiIle403Doner() throws Exception {
+        String otelAYoneticisiTokeni = otelYoneticisiKaydolVeTokenAl(otelA);
 
         mockMvc.perform(post("/api/otel/{id}/koltuk-satin-alma", otelB.getId())
-                        .header("Authorization", "Bearer " + otelATokeni)
+                        .header("Authorization", "Bearer " + otelAYoneticisiTokeni)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"koltukSayisi\":5}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void koltukSatinAlma_otelCalisaniCagiramaz_403Doner() throws Exception {
+        // Koltuk satin alma bir abonelik/faturalama islemidir, sadece OTEL_YONETICISI
+        // cagirabilir - bkz. UyelikController#koltukSatinAl uzerindeki @PreAuthorize notu.
+        String otelACalisaniTokeni = otelCalisaniKaydolVeTokenAl(otelA);
+
+        mockMvc.perform(post("/api/otel/{id}/koltuk-satin-alma", otelA.getId())
+                        .header("Authorization", "Bearer " + otelACalisaniTokeni)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"koltukSayisi\":5}"))
                 .andExpect(status().isForbidden());
@@ -153,10 +182,10 @@ class UyelikIntegrationTest {
 
     @Test
     void koltukSatinAlma_gecersizKoltukSayisiIle400Doner() throws Exception {
-        String otelATokeni = otelCalisaniKaydolVeTokenAl(otelA);
+        String otelAYoneticisiTokeni = otelYoneticisiKaydolVeTokenAl(otelA);
 
         mockMvc.perform(post("/api/otel/{id}/koltuk-satin-alma", otelA.getId())
-                        .header("Authorization", "Bearer " + otelATokeni)
+                        .header("Authorization", "Bearer " + otelAYoneticisiTokeni)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"koltukSayisi\":0}"))
                 .andExpect(status().isBadRequest());

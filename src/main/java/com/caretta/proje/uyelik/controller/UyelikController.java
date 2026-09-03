@@ -23,10 +23,18 @@ public class UyelikController {
 
     private final UyelikService uyelikService;
 
-    // Yatay yetki kontrolu (sadece kendi otelinin calisani cagirabilir) servis
+    // Yatay yetki kontrolu (sadece kendi otelinin yoneticisi cagirabilir) servis
     // katmaninda yapilir (bkz. UyelikService#koltukSatinAlBaslat), burada sadece
     // rol kontrolu var - controller'da is mantigi yazilmaz.
-    @PreAuthorize("hasRole('OTEL_CALISANI')")
+    //
+    // NOT: koltuk satin alma bir abonelik/faturalama islemidir, bu yuzden
+    // OTEL_YONETICISI'ne aciktir (OTEL_CALISANI'ye DEGIL) - frontend'de de bu
+    // form sadece yonetici paneline konulmustu (bkz. index.html
+    // #koltuk-satin-alma-form, #yonetici-panel-section icinde). Onceden buraya
+    // yanlislikla KapanisKanitiController'daki OTEL_CALISANI kontrolu kopyalanmisti;
+    // bu, arayuzde butonu goren yoneticinin tikladiginda HER ZAMAN 403 almasina
+    // (ve hicbir calisanin butonu hic gorememesine) yol aciyordu.
+    @PreAuthorize("hasRole('OTEL_YONETICISI')")
     @PostMapping("/api/otel/{id}/koltuk-satin-alma")
     public ResponseEntity<KoltukSatinAlmaResponse> koltukSatinAl(@PathVariable("id") Long id,
                                                                   @Valid @RequestBody KoltukSatinAlmaRequest request,
