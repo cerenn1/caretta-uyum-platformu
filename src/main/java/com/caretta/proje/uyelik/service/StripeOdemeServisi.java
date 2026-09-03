@@ -83,7 +83,7 @@ public class StripeOdemeServisi {
                                 .setCurrency("usd")
                                 .setUnitAmount(koltukBirimFiyatiCent)
                                 .setProductData(SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                        .setName("Caretta Uyum Platformu - Koltuk")
+                                        .setName("CarettaGuard - Koltuk")
                                         .setDescription("Otel calisani hesabi icin koltuk (test/sandbox odemesi)")
                                         .build())
                                 .build())
